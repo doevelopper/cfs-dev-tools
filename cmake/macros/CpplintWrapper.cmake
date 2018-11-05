@@ -186,3 +186,62 @@ function(add_code_linter target_name src_folder top_level_directory)
     add_dependencies(configure ${target_name}-lint)
 
 endfunction()
+
+function(add_code_linter_command target_name src_folder top_level_directory)
+    if(PYTHONINTERP_FOUND)
+
+#       if(${PYTHON_VERSION_MAJOR} EQUAL 3)
+#           message(WARNING "Cpplint won't detect errors. Install Python 2 to fix this issue.")
+#           message(FATAL_ERROR "OUCH! The Python found is Python 3. Cpplint.py doesn't run on it so far.")
+#       endif(${PYTHON_VERSION_MAJOR} EQUAL 3)
+
+        set(WORKING_DIR "${CMAKE_INSTALL_PREFIX}/qa/cpplint/${target_name}")
+#           file(MAKE_DIRECTORY ${WORKING_DIR})
+
+#            add_custom_target(${target_name}-lint
+            add_custom_command(TARGET ${target_name} PRE_BUILD
+
+                COMMAND
+                    ${CMAKE_COMMAND} -E make_directory ${WORKING_DIR}
+
+                COMMAND 
+                    ${PYTHON_EXECUTABLE} --version
+                COMMAND 
+                    ${PYTHON_EXECUTABLE} ${LINT_WRAPPER}
+                        --cpplint-file=${LINT_SCRIPT}
+                        --history-file=${WORKING_DIR}/lint_history
+                        --linelength=${LINT_LINELENGTH}
+
+#                        --exclude=${top_level_directory}/src/test/*.cpp
+#                        --exclude=${top_level_directory}/src/test/*.hpp
+##                       --headers=hpp
+                        --extensions=cpp,hpp
+                        --filter=${LINT_FILTER}
+##                        --root=cpp
+##                        --repository=${top_level_directory}
+                        --output=junit
+##                        --style-error
+##                        --recursive
+                        --counting=total
+                        --counting=detailed
+                        --verbose=5
+                        --root=cppbdd101
+                        ${src_folder} > ${WORKING_DIR}/lint.xml 2>&1
+
+                WORKING_DIRECTORY 
+                    ${WORKING_DIR}
+
+                COMMENT 
+                    "[C++ style guide checker-linter] ${target_name} ${src_folder}"
+            )
+        else(PYTHONINTERP_FOUND)
+#            add_custom_target( ${target_name}-lint
+            add_custom_command(TARGET ${target_name} PRE_BUILD
+                COMMAND 
+                    ${CMAKE_COMMAND} -E echo "[---SKIPPED---] CPPCheck  Static Code analysis! Python interp missing"
+        )
+        endif(PYTHONINTERP_FOUND)
+endfunction()
+
+
+
