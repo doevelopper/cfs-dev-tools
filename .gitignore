@@ -84,7 +84,7 @@ CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Testing
-Makefile
+Makefile.*
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
@@ -107,7 +107,7 @@ moc_*.cpp
 moc_*.h
 qrc_*.cpp
 ui_*.h
-Makefile*
+Makefile.*
 *build-*
 
 
@@ -253,3 +253,28 @@ dmypy.json
 # Pyre type checker
 .pyre/
 *.pyc
+
+# temprary work to exlude
+osgi/src/test/cpp/levitics/arkhe/gcs/osgi/core/workflow/
+src/main/idl/DistributedSimulationV2.idl
+src/main/idl/RoIS_Common.idl
+src/main/idl/RoIS_HRI.idl
+src/main/idl/dds-xtypes_discovery.idl
+src/main/idl/dds-xtypes_typeobject.idl
+src/main/idl/dds_security_plugins_spis.idl
+src/main/idl/dds_xrce_types.idl
+tmp/
+base-build.sh
+rti-dds-dev-build.sh
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+jdk-8u212-linux-x64.tar.gz
+src/main/resources/docker/amd64/rti/packages/*.rtipkg
+src/main/resources/docker/amd64/rti/packages/*.tar.gz
+packages/
+qt-opensource-linux-x64-5.13.0.run
+*.run
