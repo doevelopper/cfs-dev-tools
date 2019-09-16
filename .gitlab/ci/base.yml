@@ -1,4 +1,4 @@
-#       cfs-com/.gitlab-ci.yml
+#         cfs-com/.gitlab/ci/base.yml
 #
 #               Copyright (c) 2014-2018 A.H.L
 #
@@ -21,52 +21,32 @@
 #        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #        WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# sudo usermod -a -G sudo gitlab-runner
-# sudo visudo or sudo vi /etc/sudoers
-# %gitlab-runner ALL=(ALL) NOPASSWD: ALL # All members of gitlab-runner to run sudo w/o pwd
-# gitlab-runner ALL=(ALL) NOPASSWD: ALL # run sudo w/o password
-# gitlab-runner ALL=(ALL) NOPASSWD: /usr/bin/apt
-
-stages:
-    - Intro
-    - Build in docker image
-    - Build base image
-    - Build docker image
-    - Test docker image
-    - Configure build
-    - Build sources
-    - Build test sources
-    - Unit testing
-    - Package artifacts
-    - Integration Test
-    - Quality assurance
-    - Code review
-    - Install to local staging repository
-    - web site generation
-    - Deploy artifacts to staging repositories
-    - Clean local artifacts
-    - Outro
-
-include:
-    - local: .gitlab/ci/globals.yml
-    - local: .gitlab/ci/dind.yml
-    - local: .gitlab/ci/base.yml
-      #    - local: .gitlab/ci/base-test.yml
-      #    - local: .gitlab/ci/dds.yml
-      #    - local: .gitlab/ci/dds-test.yml
-
-Intro CI:
-    stage: Intro
+docker:build:dds-base:
+    stage: Build base image
     extends:
-        - .docker-hub-dind
-        - .pre_shared
-    script:
-        - echo '...'
+        - .create-docker-container
+    variables:
+        GOAL: build
+        PLATFORM: ""
+        BUMP_VERSION: 0.0.1
+        MODULE: "dds-base"
+        MODULE_DIR: common
+        DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+    # only:
+        # changes: [ subdir/**/*, Dockerfile, requirement.txt
 
-Outro CI:
-    stage: Outro
+docker:build:rti-dds-base:
+    stage: Build base image
     extends:
-        - .docker-hub-dind
-        - .post_shared
-    script:
-        - echo '...'
+        - .create-docker-container
+    variables:
+        GOAL: build
+        PLATFORM: "RTI"
+        BUMP_VERSION: 5.3.3
+        MODULE: "rti-connext-dds"
+        MODULE_DIR: rti
+        DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+    # only:
+    #    variables:
+    #        - $BASE == "yes"
+

@@ -1,4 +1,4 @@
-#       cfs-com/.gitlab-ci.yml
+#         cfs-com/.gitlab/ci/mirros.yml
 #
 #               Copyright (c) 2014-2018 A.H.L
 #
@@ -21,52 +21,22 @@
 #        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #        WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# sudo usermod -a -G sudo gitlab-runner
-# sudo visudo or sudo vi /etc/sudoers
-# %gitlab-runner ALL=(ALL) NOPASSWD: ALL # All members of gitlab-runner to run sudo w/o pwd
-# gitlab-runner ALL=(ALL) NOPASSWD: ALL # run sudo w/o password
-# gitlab-runner ALL=(ALL) NOPASSWD: /usr/bin/apt
-
-stages:
-    - Intro
-    - Build in docker image
-    - Build base image
-    - Build docker image
-    - Test docker image
-    - Configure build
-    - Build sources
-    - Build test sources
-    - Unit testing
-    - Package artifacts
-    - Integration Test
-    - Quality assurance
-    - Code review
-    - Install to local staging repository
-    - web site generation
-    - Deploy artifacts to staging repositories
-    - Clean local artifacts
-    - Outro
-
-include:
-    - local: .gitlab/ci/globals.yml
-    - local: .gitlab/ci/dind.yml
-    - local: .gitlab/ci/base.yml
-      #    - local: .gitlab/ci/base-test.yml
-      #    - local: .gitlab/ci/dds.yml
-      #    - local: .gitlab/ci/dds-test.yml
-
-Intro CI:
-    stage: Intro
-    extends:
-        - .docker-hub-dind
-        - .pre_shared
+Github Mirror:
+    stage: deploy
+    tags:
+        - deploy
     script:
-        - echo '...'
-
-Outro CI:
-    stage: Outro
-    extends:
-        - .docker-hub-dind
-        - .post_shared
+      - git push --mirror https://$GITHUB_USERNAME:$GITHUB_PASSWORD@$GITHUB_REPO
+      - git push https://$GITHUB_USERNAME:$GITHUB_PASSWORD@$GITHUB_REPO HEAD:master
+ 
+Bitbucket Mirror:
+    stage: deploy
+    tags:
+        - deploy
     script:
-        - echo '...'
+        - mkdir -p ~/.ssh
+        - echo "$BB_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+        - chmod 600 ~/.ssh/id_rsa
+        - ssh-keyscan -H 'bitbucket.org' >> ~/.ssh/known_hosts
+        - git push --mirror git@$BITBUCKET_REPO
+        - git push git@$BITBUCKET_REPO HEAD:master
