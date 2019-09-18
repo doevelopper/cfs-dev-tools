@@ -25,7 +25,7 @@
 add_library(cfs.dev.tools.main
     cfs/dev/tools/Dummy
 )
- 
+
 #apply_style_targets_command (cfs.dev.tools.main ${CMAKE_CURRENT_SOURCE_DIR})
 #add_cppcheck_analysis_command(cfs.dev.tools.main ${CMAKE_CURRENT_SOURCE_DIR})
 #add_code_linter_command(cfs.dev.tools.main ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -38,7 +38,7 @@ endif()
 
 include(GenerateExportHeader)
 generate_export_header(cfs.dev.tools.main
-    EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/cfs/dev/tools/CfsDevToolsEcport.hpp"
+    EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/cfs/dev/tools/Export.hpp"
     INCLUDE_GUARD_NAME CFS_DEV_TOOLS_EXPORT_HPP
     EXPORT_MACRO_NAME API_DECLS
     BASE_NAME cfs-dev-tools
@@ -75,14 +75,18 @@ target_compile_features(cfs.dev.tools.main
 target_compile_definitions(cfs.dev.tools.main
     PRIVATE
         "VERBOSITY=$<IF:$<BOOL:${VERBOSE}>,30,10>"
-        
+        #        $<$<AND$<EQUAL:${GIT_BRANCH}, master>,$<IF:$<STRING:${RELEASE_LEVEL}>>:RELEASE_LEVEL="CANDIDATE">
+        #        $<$<AND$<EQUAL:${GIT_BRANCH}, develp>,$<IF:$<STRING:${RELEASE_LEVEL}>>:RELEASE_LEVEL="BETA">
+        #        $<$<AND$<EQUAL:${GIT_BRANCH}, release>,$<IF:$<STRING:${RELEASE_LEVEL}>>:RELEASE_LEVEL="FINAL">
+#        "RELEASE_LEVEL=$<IF:$<STRING:${RELEASE_LEVEL}>,30,10>" #SNAPSHOOT ,ALPHA , BETA , CANDIDATE , FINAL.
+
 )
 
 target_compile_options(cfs.dev.tools.main
     INTERFACE
         $<$<CONFIG:Debug>:-g3 -O0 -fstack-protector>
         $<$<CONFIG:Release>:-g0 -O2>
-    PUBLIC 
+    PUBLIC
         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>: -W -Wextra -Weffc++ -Wall -pedantic-errors -Wconversion -Wsign-conversion>
 
         $<IF:$<COMPILE_LANGUAGE:CXX>,-Wold-style-cast,>
@@ -114,22 +118,22 @@ target_compile_options(cfs.dev.tools.main
 
         $<$<CONFIG:Profile>:-fsanitize=memory -fsanitize-memory-track-origins=2 -fno-omit-frame-pointer -fsanitize=null>
         $<$<CONFIG:Profile>:-fsanitize=unreachable -fstack-check -fvtable-verify=std>
-        
+
 )
 
-target_include_directories(cfs.dev.tools.main 
+target_include_directories(cfs.dev.tools.main
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cfs/dev/tools>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         $<INSTALL_INTERFACE:include/cfs/dev/tools>
-    SYSTEM 
+    SYSTEM
         PUBLIC
             ${CMAKE_INSTALL_INCLUDEDIR}/cfs/dev/tools
 )
 
 target_link_libraries(cfs.dev.tools.main
-    PUBLIC 
+    PUBLIC
         LOG4CXX::LOG4CXX
 )
 
@@ -142,6 +146,11 @@ target_link_libraries(cfs.dev.tools.main.bin
 )
 
 add_dependencies(compile cfs.dev.tools.main.bin)
+
+set_target_properties(cfs.dev.tools.main PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
+)
 
 #EXPORT LIBRARY INTERFACE
 

@@ -26,9 +26,9 @@
 
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-project (cfs.dev.tools 
-    VERSION 1.0.0.0 
-    DESCRIPTION "Usefull cmake scripts and oders tools used for my projects" 
+project (cfs.dev.tools
+    VERSION 1.0.0.0
+    DESCRIPTION "Usefull cmake scripts and oders tools used for my projects"
     HOMEPAGE_URL "https://exemple.com"
     LANGUAGES CXX
 )
@@ -79,7 +79,7 @@ ProcessorCount(Ncpu)
 find_package(Log4cxx)
 find_package(GoogleTestFwk)
 find_package(Cucumber-cpp)
-find_package(Doxygen  
+find_package(Doxygen
    REQUIRED  dot
    OPTIONAL_COMPONENTS mscgen dia
 )
@@ -96,7 +96,7 @@ write_compiler_detection_header(
     FILE ${CMAKE_INSTALL_INCLUDEDIR}/cfs/algo/CompilerDetection.hpp
     PREFIX CFS_ALGO
 #   OUTPUT_FILES_VAR <output_files_var> OUTPUT_DIR <output_dir>
-    COMPILERS GNU Clang 
+    COMPILERS GNU Clang
     FEATURES ${cxx_known_features}
     VERSION "${CMAKE_VERSION}"
     PROLOG "//<This is a custom prolog>"
@@ -121,8 +121,8 @@ configure_file("${PROJECT_SOURCE_DIR}/configs/Version.cpp.in"
                 "${CMAKE_INSTALL_INCLUDEDIR}/cfs/dev/tools/Version.cpp"
                 @ONLY)
 
-#configure_file(conanfile.py.in 
-#    ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.py 
+#configure_file(conanfile.py.in
+#    ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.py
 #    @ONLY
 #)
 
@@ -130,11 +130,11 @@ include(CMakePackageConfigHelpers)
 write_basic_package_version_file(${CMAKE_INSTALL_PREFIX}/cmake/cfs-dev-tools-config-version.cmake COMPATIBILITY ExactVersion)
 
 
-#add_custom_target(build-time-make-directory-and-copy-files verify all 
-#    #COMMAND LD_LIBRARY_PATH=${ROOT_LIBRARY_DIR} ROOTSYS=${ROOTSYS} make 
+#add_custom_target(build-time-make-directory-and-copy-files verify all
+#    #COMMAND LD_LIBRARY_PATH=${ROOT_LIBRARY_DIR} ROOTSYS=${ROOTSYS} make
 #    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/bin/conf
-#    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/bin/logs 
-#    COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+#    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/bin/logs
+#    COMMAND ${CMAKE_COMMAND} -E copy_if_different
 #            ${PROJECT_SOURCE_DIR}/src/main/resources/configs/log4cxx.xml
 #            ${CMAKE_INSTALL_PREFIX}/bin/conf
 #)
