@@ -331,7 +331,8 @@ RUN cd /tmp \
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && git clone --depth=1 --recurse-submodules https://github.com/cucumber/cucumber-cpp.git \
+    # && git clone --depth=1 --recurse-submodules https://github.com/cucumber/cucumber-cpp.git \
+    && git clone --depth=1 --recurse-submodules --single-branch --branch fix-boost-1.70.0-build https://github.com/homespring/cucumber-cpp.git \
     && cd cucumber-cpp \
     && gem install bundler -v 1.17.3 \
     && bundle install \

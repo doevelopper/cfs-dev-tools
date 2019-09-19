@@ -57,7 +57,7 @@ BUILD_ARGS          += --build-arg CI_DOMAIN="$(CI_RUNNER_TAGS)"
 ifneq ($(DDS_DEV_IMAGE),)
     BUILD_ARGS      += --build-arg DDS_DEV_IMAGE=$(DDS_DEV_IMAGE)
 else
-    $(warning DDS_DEV_IMAGE env not defined! using defaul docker.io/doevelopper/cfs-com-common:latest)
+    $(warning DDS_DEV_IMAGE env not defined! using defaul docker.io/doevelopper/cfs-dev-tools-common:latest)
 endif
 
 ifneq ($(PROXY_URL),)
@@ -94,10 +94,10 @@ build-image:
 
 .PHONY: push-image
 push-image:
+ifneq ($(CI_RUNNER_TAGS),)
 	$(Q)echo "$(SH_BLUE) Apply tag [$(SEM_VERSION)|latest] on $(BUILDER_FQIN)  $(SH_DEFAULT)"
 	$(Q)$(DOCKER) tag $(BUILDER_FQIN):$(SEM_VERSION) $(BUILDER_FQIN):latest
 	$(Q)echo
-ifneq ($(CI_RUNNER_TAGS),)
 	$(Q)echo "$(SH_BLUE) Pushing $(BUILDER_FQIN):[$(SEM_VERSION)|latest] to $(DOCKER_TRUSTED_REGISTRY)$(SH_DEFAULT)"
 	$(Q)$(DOCKER) push $(BUILDER_FQIN):$(SEM_VERSION)
 	$(Q)$(DOCKER) push $(BUILDER_FQIN):latest
