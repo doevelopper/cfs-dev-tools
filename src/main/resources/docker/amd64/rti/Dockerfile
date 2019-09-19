@@ -717,19 +717,23 @@ RUN cd /tmp \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
-RUN echo -e '\033[36;1m ******* RTI PACKAGES Installation ******** \033[0m'
+RUN echo -e '\033[36;1m *******  To avoid RTI license violation.... ******** \033[0m'
+RUN echo -e '\033[36;1m *******  Refert to below commented section ******** \033[0m'
+RUN echo -e '\033[36;1m *******  to crreate an efficient development environment of.******** \033[0m'
+RUN echo -e '\033[36;1m *******  RTI Connext DDS Professional.******** \033[0m'
 
+RUN echo -e '\033[36;1m ******* RTI PACKAGES Installation ******** \033[0m'
 
 ARG RTI_DDS_VERSION=6.0.0
 
-COPY packages/rti_license.dat /opt/rti_connext_dds-${RTI_DDS_VERSION}/
-COPY packages/*.rtipkg  /tmp/
-COPY packages/rti_connext_dds-${RTI_DDS_VERSION}-pro-host-x64Linux.run /tmp/
+#COPY packages/rti_license.dat /opt/rti_connext_dds-${RTI_DDS_VERSION}/
+#COPY packages/*.rtipkg  /tmp/
+#COPY packages/rti_connext_dds-${RTI_DDS_VERSION}-pro-host-x64Linux.run /tmp/
 
-RUN cd /tmp/ \
-      && chmod +x /tmp/rti_connext_dds-${RTI_DDS_VERSION}-pro-host-x64Linux.run  \
-      && ./rti_connext_dds-${RTI_DDS_VERSION}-pro-host-x64Linux.run  --mode unattended --prefix /opt --disable_copy_examples true \
-      && rm -rvf /tmp/rti_connext_dds-${RTI_DDS_VERSION}-pro-host-x64Linux.run
+#RUN cd /tmp/ \
+#      && chmod +x /tmp/rti_connext_dds-${RTI_DDS_VERSION}-pro-host-x64Linux.run  \
+#      && ./rti_connext_dds-${RTI_DDS_VERSION}-pro-host-x64Linux.run  --mode unattended --prefix /opt --disable_copy_examples true \
+#      && rm -rvf /tmp/rti_connext_dds-${RTI_DDS_VERSION}-pro-host-x64Linux.run
 
 ARG AMD_PREFIX=x64Linux3gcc5.4.0
 ARG AMD_PREFIX_7.4=x64Linux3gcc7.4.0
@@ -737,39 +741,38 @@ ENV NDDSHOME=/opt/rti_connext_dds-${RTI_DDS_VERSION}
 ENV PATH="${PATH}:${NDDSHOME}/bin"
 ENV LD_LIBRARY_PATH=/opt/rti_connext_dds-${RTI_DDS_VERSION}/lib/:${LD_LIBRARY_PATH}
 
-RUN cd /tmp/ \
-    && rtipkginstall -unattended rti_connext_dds-6.0.0-pro-target-x64Linux4gcc7.3.0.rtipkg \
-    && rtipkginstall -unattended rti_limited_bandwidth_plugins-6.0.0-x64Linux4gcc7.3.0.rtipkg \
-    && rtipkginstall -unattended rti_security_plugins-6.0.0-target-x64Linux4gcc7.3.0.rtipkg \
-    && rtipkginstall -unattended rti_tls_support-6.0.0-x64Linux4gcc7.3.0.rtipkg \
-    && rtipkginstall -unattended rti_secure_wan-6.0.0-x64Linux4gcc7.3.0.rtipkg \
-    && rtipkginstall -unattended rti_limited_bandwidth_plugins_host-6.0.0-x64Linux.rtipkg \
-    && rtipkginstall -unattended rti_web_integration_service-6.0.0-x64Linux.rtipkg \
-    && rtipkginstall -unattended rti_security_plugins-6.0.0-host-x64Linux.rtipkg \
-    && rtipkginstall -unattended rti_database_integration-6.0.0-x64Linux.rtipkg \
-    && rtipkginstall -unattended rti_tls_host_support-6.0.0-x64Linux.rtipkg \
-    && rtipkginstall -unattended openssl-1.0.2o-6.0.0-host-x64Linux.rtipkg \
-    && rtipkginstall -unattended rti_secure_wan_host-6.0.0-x64Linux.rtipkg \
-    && rtipkginstall -unattended rti_queuing_service-6.0.0-x64Linux.rtipkg \
-    && rtipkginstall -unattended rti_connext_dds_micro-3.0.0-Unix.rtipkg \
-    && rm -rvf /tmp/*.rtipkg
+#RUN cd /tmp/ \
+#    && rtipkginstall -unattended rti_connext_dds-6.0.0-pro-target-x64Linux4gcc7.3.0.rtipkg \
+#    && rtipkginstall -unattended rti_limited_bandwidth_plugins-6.0.0-x64Linux4gcc7.3.0.rtipkg \
+#    && rtipkginstall -unattended rti_security_plugins-6.0.0-target-x64Linux4gcc7.3.0.rtipkg \
+#    && rtipkginstall -unattended rti_tls_support-6.0.0-x64Linux4gcc7.3.0.rtipkg \
+#    && rtipkginstall -unattended rti_secure_wan-6.0.0-x64Linux4gcc7.3.0.rtipkg \
+#    && rtipkginstall -unattended rti_limited_bandwidth_plugins_host-6.0.0-x64Linux.rtipkg \
+#    && rtipkginstall -unattended rti_web_integration_service-6.0.0-x64Linux.rtipkg \
+#    && rtipkginstall -unattended rti_security_plugins-6.0.0-host-x64Linux.rtipkg \
+#    && rtipkginstall -unattended rti_database_integration-6.0.0-x64Linux.rtipkg \
+#    && rtipkginstall -unattended rti_tls_host_support-6.0.0-x64Linux.rtipkg \
+#    && rtipkginstall -unattended openssl-1.0.2o-6.0.0-host-x64Linux.rtipkg \
+#    && rtipkginstall -unattended rti_secure_wan_host-6.0.0-x64Linux.rtipkg \
+#    && rtipkginstall -unattended rti_queuing_service-6.0.0-x64Linux.rtipkg \
+#    && rtipkginstall -unattended rti_connext_dds_micro-3.0.0-Unix.rtipkg \
+#    && rm -rvf /tmp/*.rtipkg
 
-COPY packages/*.tar.gz /tmp/
-COPY packages/*.zip /tmp/
+#COPY packages/*.tar.gz /tmp/
+#COPY packages/*.zip /tmp/
 
-RUN cd /tmp/ \
-    && mkdir -pv /opt/rti_connext_openssl/target-x64Linux4gcc7.3.0 \
-    && tar -zvxf openssl-1.0.2o-target-x64Linux4gcc7.3.0.tar.gz -C /opt/rti_connext_openssl/target-x64Linux4gcc7.3.0 --strip-components=1 \
-    && mkdir -pv /opt/rti_routing_service/ \
-    && unzip rti_routing_service-${RTI_DDS_VERSION}-src.zip -d /opt/rti_routing_service \
-    && rm -rvf /tmp/*.tar.gz  /tmp/*.zip
+#RUN cd /tmp/ \
+#    && mkdir -pv /opt/rti_connext_openssl/target-x64Linux4gcc7.3.0 \
+#    && tar -zvxf openssl-1.0.2o-target-x64Linux4gcc7.3.0.tar.gz -C /opt/rti_connext_openssl/target-x64Linux4gcc7.3.0 --strip-components=1 \
+#    && mkdir -pv /opt/rti_routing_service/ \
+#    && unzip rti_routing_service-${RTI_DDS_VERSION}-src.zip -d /opt/rti_routing_service \
+#    && rm -rvf /tmp/*.tar.gz  /tmp/*.zip
 
 ARG BULLSEYE_VERSION=${BULLSEYE_VERSION:-8.15.39}
 
 # RUN curl -Lk http://www.bullseye.com/download/BullseyeCoverage-$BULLSEYE_VERSION-Linux-x64.tar | tar x -C /opt
 
-##RUN echo | /opt/BullseyeCoverage-$BULLSEYE_VERSION/install --key 4ChKeY0AX2Et3CDftN2cqkhg0NUEf03o4gQX
-# RUN echo | /opt/BullseyeCoverage-$BULLSEYE_VERSION/install --key 2Ct8nh2WOwHc2t4gvl1IYzzX1uGCW82sERqr
+# RUN echo | /opt/BullseyeCoverage-$BULLSEYE_VERSION/install --key "$keychain"
 
 # RUN rm -rf /opt/BullseyeCoverage-$BULLSEYE_VERSION*
 
