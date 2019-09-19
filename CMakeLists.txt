@@ -46,11 +46,12 @@ add_definitions(-DRELEASE_LEVEL="SNAPSHOOT") # SNAPSHOOT ,ALPHA , BETA , CANDIDA
 set(RELEASE_LEVEL "SNAPSHOOT")
 
 list(APPEND CMAKE_MODULE_PATH
-    "${CMAKE_SOURCE_DIR}/cmake"
-    "${CMAKE_SOURCE_DIR}/cmake/modules"
-    "${CMAKE_SOURCE_DIR}/cmake/toolChains"
-    "${CMAKE_SOURCE_DIR}/cmake/macros"
-    "${CMAKE_SOURCE_DIR}/cmake"
+    "${CMAKE_SOURCE_DIR}/src/main/resources/cmake"
+    "${CMAKE_SOURCE_DIR}/src/main/resources/cmake/modules"
+    "${CMAKE_SOURCE_DIR}/src/main/resources/cmake/toolChains"
+    "${CMAKE_SOURCE_DIR}/src/main/resources/cmake/macros"
+    "${CMAKE_SOURCE_DIR}/src/test/resources/cmake"
+    "${CMAKE_SOURCE_DIR}/src/test/resources/scripts"
 )
 
 include(CompilerOption)
@@ -106,7 +107,7 @@ write_compiler_detection_header(
 )
 
 configure_file("${PROJECT_SOURCE_DIR}/configs/GitRevision.hpp.in"
-               "${CMAKE_INSTALL_INCLUDEDIR}/cfs/dev/toolso/GitRevision.hpp"
+               "${CMAKE_INSTALL_INCLUDEDIR}/cfs/dev/tools/GitRevision.hpp"
                @ONLY)
 
 configure_file("${PROJECT_SOURCE_DIR}/configs/AppInfo.hpp.in"
