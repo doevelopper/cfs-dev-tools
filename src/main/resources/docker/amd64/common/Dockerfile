@@ -65,7 +65,7 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
       python-pip python-dev python-wheel cython python-setuptools \
       python3-pip python3-dev python3-wheel cython3 python3-setuptools \
       ruby ruby-dev libjpeg-dev libudev-dev libmpfr-dev \
-      libglib2.0-dev libglib2.0-bin libglib2.0-0 \
+      libglib2.0-dev libglib2.0-bin libglib2.0-0 hxtools\
       xvfb xauth libx11-xcb1 libfontconfig1 libfontconfig1-dev libdbus-1-3 libgl1-mesa-dev \
       libperl-dev perl perl-base perl-modules apt-utils gettext \
       yasm nasm xotcl-dev tcl-expect-dev tcl-dev docbook2x dos2unix \
@@ -78,7 +78,7 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
       gobject-introspection liborc-0.4-dev liborc-0.4-dev-bin libgudev-1.0-dev libgudev3.0-cil-dev \
       libogg-dev liboggz2-dev python-ogg libisocodes-dev gir1.2-isocodes-1.2 libpng++-dev \
       libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
-      extra-cmake-modules libmicrohttpd-dev \
+      iptables jq htop extra-cmake-modules libmicrohttpd-dev most \
     && apt-get clean --assume-yes \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
@@ -300,6 +300,7 @@ RUN cd /tmp \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 ENV MANPATH=${MANPATH}:/usr/local/man:/usr/local/share/man:/usr/share/man:/usr/man
+ENV MANPAGER=most
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
@@ -342,7 +343,7 @@ RUN cd /tmp \
     && cmake --build build --target all --clean-first\
     && cmake --build build --target test \
     && cmake --build build --target install \
-    && cmake --build build --target features \
+    && cmake --build build --target features || true \
     && cd /tmp \
     && rm -rf cucumber-cpp \
     && TimePoint="$(($(date +%s)-TimePoint))" \
@@ -1029,7 +1030,7 @@ RUN echo -e '\033[36;1m ******* Below are commented section to investigate *****
    # && make install \
    # && cd /tmp/ \
    # && rm -rf /gstreamer
-      
+
 # need libjpeg-dev
 RUN cd /tmp \
     && git clone --depth=1 https://github.com/Motion-Project/motion.git \
