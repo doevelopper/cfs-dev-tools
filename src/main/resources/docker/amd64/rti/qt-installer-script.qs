@@ -31,22 +31,57 @@ Controller.prototype.IntroductionPageCallback = function() {
 
 // set the installation target directory
 Controller.prototype.TargetDirectoryPageCallback = function() {
-    gui.currentPageWidget().TargetDirectoryLineEdit.setText("/opt/qt/");
+    gui.currentPageWidget().TargetDirectoryLineEdit.setText("/opt/Qt/");
+//    gui.currentPageWidget().TargetDirectoryLineEdit.setText(installer.value("HomeDir") + "/Qt");
     gui.clickButton(buttons.NextButton);
 }
 
 // select the components to install
 Controller.prototype.ComponentSelectionPageCallback = function() {
+//    function list_packages() {
+//        var components = installer.components();
+//        console.log("Available components: " + components.length);
+//        var packages = ["Packages: "];
+//        for (var i = 0 ; i < components.length ;i++) {
+//            packages.push(components[i].name);
+//        }
+//        console.log(packages.join(" "));
+//    }
+
+//    list_packages();
+
     var widget = gui.currentPageWidget();
+    console.log(widget);
 
-    widget.selectAll();
+//  widget.selectAll();
+//	widget.deselectComponent("qt.qt5.5130.src");
+//	widget.deselectComponent("qt.qt5.5130.android_armv7");
+//	widget.deselectComponent("qt.qt5.5130.android_x86_64");
+//	widget.deselectComponent("qt.qt5.5130.android_x86");
+//	widget.deselectComponent("qt.qt5.5130.doc");
+//	widget.deselectComponent("qt.qt5.5130.qtscript");
+//	widget.deselectComponent("qt.qt5.5130.examples");
+//  widget.selectComponent("qt.qt5.5130.qtcharts");
+//  widget.selectComponent("qt.qt5.5130.qtdatavis3d");
+//  widget.selectComponent("qt.qt5.5130.qtlottie");
+//  widget.selectComponent("qt.qt5.5130.qtpurchasing");
+//  widget.selectComponent("qt.qt5.5130.qtvirtualkeyboard");
+//  widget.selectComponent("qt.qt5.5130.qtwebengine");
+//  widget.selectComponent("qt.qt5.5130.qtnetworkauth");
+//  widget.selectComponent("qt.qt5.5130.qtwebglplugin");
 
-	widget.deselectComponent("qt.qt5.5130.src");
-	widget.deselectComponent("qt.qt5.5130.android_armv7");
-	widget.deselectComponent("qt.qt5.5130.android_x86");
+    widget.deselectAll();
+    widget.selectComponent("qt.qt5.5130.gcc_64");
+    widget.selectComponent("qt.tools.qtcreator");
+    widget.selectComponent("qt.qt5.5130.qtcharts.gcc_64");
+    widget.selectComponent("qt.qt5.5130.qtdatavis3d.gcc_64");
+    widget.selectComponent("qt.qt5.5130.qtlottie.gcc_64");
+    widget.selectComponent("qt.qt5.5130.qtpurchasing.gcc_64");
+    widget.selectComponent("qt.qt5.5130.qtvirtualkeyboard.gcc_64");
+    widget.selectComponent("qt.qt5.5130.qtwebengine.gcc_64");
+    widget.selectComponent("qt.qt5.5130.qtnetworkauth.gcc_64");
+    widget.selectComponent("qt.qt5.5130.qtwebglplugin.gcc_64");
     gui.clickButton(buttons.NextButton);
-    //widget.deselectAll();
-    //widget.selectComponent("qt.qt5.5130.gcc_64");
 }
 
 // accept the license agreement
