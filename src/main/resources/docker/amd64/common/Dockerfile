@@ -593,6 +593,7 @@ RUN cd /tmp \
     && make install \
     && cd /tmp \
     && rm -rf gsl-2.6.tar.gz gsl-2.6 \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 RUN cd /tmp \
@@ -606,6 +607,7 @@ RUN cd /tmp \
     && cmake --build build --target install \
     && cd /tmp/ \
     && rm -Rf eigen-git-mirror \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 RUN cd /tmp \
@@ -622,6 +624,7 @@ RUN cd /tmp \
     && cmake --build build --target install \
     && cd /tmp \
     && rm -rf ginkgo \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 RUN cd /tmp \
@@ -638,6 +641,7 @@ RUN cd /tmp \
     && cmake --build cgal-build --target install \
     && cd /tmp/ \
     && rm -Rf cgal \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 RUN cd /tmp \
@@ -651,9 +655,11 @@ RUN cd /tmp \
     && cmake --build xsimd-build --target install \
     && cd /tmp/ \
     && rm -Rf xsimd \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
     && git clone --depth=1 https://github.com/google/capture-thread.git \
     && cd capture-thread \
     && cmake -E make_directory build \
@@ -661,34 +667,84 @@ RUN cd /tmp \
     && cmake --build build --target all --clean-first  \
     && cmake --build build --target install \
     && cd /tmp \
-    && rm -rf capture-thread
+    && rm -rf capture-thread \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 RUN echo -e '\033[36;1m ******* Below are commented section to investigate ******** \033[0m'
 
 ARG GST_VERSION=1.16.0
 
 # need libjpeg-dev
-# RUN cd /tmp \
-    # && git clone --depth=1 https://github.com/Motion-Project/motion.git \
-    # && cd motion \
-    # && autoreconf -fiv \
-    # && ./configure --without-ffmpeg --prefix=/usr/local \
-    # && make clean  \
-    # && make \
-    # && make install \
-    # && cd /tmp \
-    # && rm -fr motion
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && git clone --depth=1 https://github.com/Motion-Project/motion.git \
+    && cd motion \
+    && autoreconf -fiv \
+    && ./configure --without-ffmpeg --prefix=/usr/local \
+    && make clean  \
+    && make \
+    && make install \
+    && cd /tmp \
+    && rm -fr motion \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && git clone  --depth=1 git://git.linuxtv.org/v4l-utils.git \
+    && cd v4l-utils \
+    && autoreconf -vfi \
+    && ./configure --prefix=/usr/local \
+    && make > /dev/null 2>&1 \
+    && make install \
+    && cd /tmp/ \
+    && rm -Rf v4l-utils \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+####  installs unwante dependencies like boost1.67 ....
+# RUN apt-get -qq install --assume-yes --no-install-recommends \
+		# libgstreamer-plugins-base1.0-dev \
+		# libgstreamer-plugins-good1.0-dev \
+		# libgstreamer-plugins-bad1.0-dev \
+		# libgstreamer1.0-dev \
+		# libgstreamer-ocaml-dev \
+		# libgstreamer-plugins-bad1.0-dev \
+		# libges-1.0-dev \
+		# libgstreamermm-1.0-dev \
+		# libgstrtspserver-1.0-dev \
+		# libnice-dev \
+		# libgirepository1.0-dev \
+		# libqt5gstreamer-dev \
+    # && apt-get clean --assume-yes \
+    # && apt-get --assume-yes --quiet clean \
+    # && apt-get --assume-yes --quiet autoremove \
+    # && rm -rvf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/* \
+    # && rm -rf /usr/share/man/
+# Clone the other GStreamer modules as meson subprojects and build everything in one go.
 # RUN cd /tmp \
     # && TimePoint="$(date +%s)" \
-    # && git clone  --depth=1 git://git.linuxtv.org/v4l-utils.git \
-    # && cd v4l-utils \
-    # && autoreconf -vfi \
-    # && ./configure --prefix=/usr/local \
-    # && make > /dev/null 2>&1 \
-    # && make install \
-    # && cd /tmp/ \
-    # && rm -Rf v4l-utils \
+    # && GIT_SSL_NO_VERIFY=1 git clone --depth=1 --recurse-submodules https://gitlab.freedesktop.org/gstreamer/gst-build.git \
+    # && cd gst-build \
+    # && meson --prefix=/usr/local \
+        # -Dpython=enabled -Dlibav=enabled -Dugly=enabled -Dbad=enabled -Ddevtools=enabled \
+        # -Dges=enabled -Drtsp_server=enabled -Dvaapi=enabled -Dsharp=disabled \
+        # -Dtests=disabled -Ddoc=disabled -Dgtk_doc=disabled\
+        # -Dintrospection=disabled -Dexamples=disabled -Dbenchmarks=disabled \
+        # -Dcpp_std=c++11 \
+        # -Dorc=disabled \
+        # -Dgst-python:python=/usr/bin/python3.7 \
+        # -Dpygobject=enabled \
+        # -Dpygobject:python=/usr/bin/python3.7 \
+        # -Dpygobject:pycairo=false \
+        # -Dgobject-introspection:python=/usr/bin/python3.7 \
+         # build/ \
+    # && PYTHONIOENCODING=utf-8  /usr/bin/ninja  -C build \
+    # && PYTHONIOENCODING=utf-8  /usr/bin/ninja  -C build install \
+    # && cd /tmp \
+    # && rm -rf gst-build \
+    # && TimePoint="$(($(date +%s)-TimePoint))" \
     # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 # http://www.linuxfromscratch.org/blfs/view/svn/multimedia/gstreamer10.html
@@ -829,29 +885,14 @@ ARG GST_VERSION=1.16.0
     # && rm -rf gst-* \
     # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-# Clone the other GStreamer modules as meson subprojects and build everything in one go.
-# RUN cd /tmp \
-    # && TimePoint="$(date +%s)" \
-    # && GIT_SSL_NO_VERIFY=1 git clone --depth=1 --recurse-submodules https://gitlab.freedesktop.org/gstreamer/gst-build.git \
-    # && cd gst-build \
-    # && meson --prefix=/usr/local \
-        # -Dpython=enabled -Dlibav=enabled -Dugly=enabled -Dbad=enabled -Ddevtools=enabled \
-        # -Dges=enabled -Drtsp_server=enabled -Dvaapi=enabled -Dsharp=disabled \
-        # -Dtests=disabled -Ddoc=disabled -Dgtk_doc=disabled\
-        # -Dintrospection=disabled -Dexamples=disabled -Dbenchmarks=disabled \
-        # -Dcpp_std=c++11 \
-        # -Dorc=disabled \
-        # -Dgst-python:python=/usr/bin/python3.7 \
-        # -Dpygobject=enabled \
-        # -Dpygobject:python=/usr/bin/python3.7 \
-        # -Dpygobject:pycairo=false \
-        # -Dgobject-introspection:python=/usr/bin/python3.7 \
-         # build/ \
-    # && PYTHONIOENCODING=utf-8  /usr/bin/ninja  -C build \
-    # && PYTHONIOENCODING=utf-8  /usr/bin/ninja  -C build install \
-    # && cd /tmp \
-    # && rm -rf gst-build \
-    # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+# Fetch and build gst-python
+# RUN git clone -b $GST_VERSION --depth 1 git://anongit.freedesktop.org/git/gstreamer/gst-python && \
+  # cd gst-python && \
+  # meson build --prefix=/usr --libdir=/usr/lib --buildtype=release && \
+  # ninja -C build -j `nproc` && \
+  # ninja -C build install && \
+  # cd .. && \
+  # rm -rvf /gst-python
 
 # RUN cd /tmp \
     # && git clone --depth=1 https://github.com/cisco/openh264.git \
@@ -1138,6 +1179,10 @@ ARG GST_VERSION=1.16.0
 #RUN conan install . -s os=Linux -s os_build=Linux -s arch=x86_64 -s arch_build=x86_64 -s compiler=gcc -s compiler.version=7 -s compiler.libcxx=libstdc++11 && \
 #    mkdir build && cd build && \
 #    cmake .. -G "Unix Makefiles"i
+
+# Do some cleanup
+RUN DEBIAN_FRONTEND=noninteractive  apt-get clean && \
+  apt-get autoremove -y
 
 RUN echo -e '\033[36;1m ******* CONTAINER START COMMAND ******** \033[0m'
 CMD ["/bin/bash"]
