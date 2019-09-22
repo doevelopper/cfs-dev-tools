@@ -20,7 +20,7 @@ add_executable(cfs.algo.it-test.steps
 apply_style_targets_command(cfs.algo.it-test.steps ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(cfs.algo.it-test.steps
-    PUBLIC  
+    PUBLIC
         cfs.algo.main
         cfs.algo.test
         CUCUMBER-CPP::CUCUMBER-CPP
@@ -30,19 +30,19 @@ target_link_libraries(cfs.algo.it-test.steps
 add_custom_target(cfs.algo.integration-test
 
     COMMAND
-        ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/qa/test-result        
+        ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/qa/test-result
     COMMAND
         cfs.algo.it-test.steps --port 3902  >/dev/null &
 
-    COMMAND 
-        cucumber ${FEATURE_TEST_FORMAT} ${FEATURE_TEST_OPTION} 
-            --out ${CMAKE_INSTALL_PREFIX}/qa/test-result/cfs.algo.test-report.html 
+    COMMAND
+        cucumber ${FEATURE_TEST_FORMAT} ${FEATURE_TEST_OPTION}
+            --out ${CMAKE_INSTALL_PREFIX}/qa/test-result/cfs.algo.test-report.html
             --strict ${CMAKE_CURRENT_SOURCE_DIR}/cfs/algo/features
 
-    WORKING_DIRECTORY 
+    WORKING_DIRECTORY
         ${CMAKE_CURRENT_SOURCE_DIR}
 
-    COMMENT 
+    COMMENT
         "Run cfs algo integration test."
 )
 
@@ -58,13 +58,13 @@ add_custom_target(cfs.algo.integration-test
 #        "Start cucumber's wire server on port 3902."
 #)
 
-add_custom_command(TARGET cfs.algo.integration-test 
+add_custom_command(TARGET cfs.algo.integration-test
     POST_BUILD
-    COMMAND 
+    COMMAND
         fuser -k -n  tcp 3902 || true # kill -9 *.Seps which is using port 3902
 #        # iptables -I INPUT -p tcp --dport 3902 -j DROP ;# need to be root for this command
     COMMENT
-        // check pro opened lsof -i -P -n | grep LISTEN 
+        // check pro opened lsof -i -P -n | grep LISTEN
         "Killing process to close cucumber wire port. (bind: Address already in use)"
 )
 

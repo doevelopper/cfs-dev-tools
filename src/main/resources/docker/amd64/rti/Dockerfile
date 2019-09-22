@@ -81,7 +81,7 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
         gobject-introspection liborc-0.4-dev liborc-0.4-dev-bin libgudev-1.0-dev libgudev3.0-cil-dev \
         libogg-dev liboggz2-dev python-ogg libisocodes-dev gir1.2-isocodes-1.2 libpng++-dev \
         libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
-        iptables jq htop extra-cmake-modules libmicrohttpd-dev most \
+        iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof hxtools \
     && apt-get clean --assume-yes  \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
@@ -578,11 +578,14 @@ RUN cd /opt \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
-COPY qt-installer-script.qs /tmp
+COPY qt-installer-script.qs qt-opensource-linux-x64-* /tmp/
 
 RUN cd /tmp \
     && Time="$(date +%s)" \
-    && curl -k -L -O "http://download.qt.io/official_releases/qt/${Q_MAJOR_VERSION}/${Q_VERSION}/qt-opensource-linux-x64-${Q_VERSION}.run" \
+    && if [ ! -f "/tmp/qt-opensource-linux-x64-${Q_VERSION}.run" ]; \
+          then \
+              curl -k -L -O "http://download.qt.io/official_releases/qt/${Q_MAJOR_VERSION}/${Q_VERSION}/qt-opensource-linux-x64-${Q_VERSION}.run"; \
+        fi \
     && chmod +x ./qt-installer-script.qs \
     && chmod +x ./qt-opensource-linux-x64-${Q_VERSION}.run \
     && xvfb-run ./qt-opensource-linux-x64-${Q_VERSION}.run --script ./qt-installer-script.qs --platform minimal --verbose > /dev/null 2>&1 \

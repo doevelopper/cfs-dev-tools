@@ -78,7 +78,7 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
       gobject-introspection liborc-0.4-dev liborc-0.4-dev-bin libgudev-1.0-dev libgudev3.0-cil-dev \
       libogg-dev liboggz2-dev python-ogg libisocodes-dev gir1.2-isocodes-1.2 libpng++-dev \
       libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
-      iptables jq htop extra-cmake-modules libmicrohttpd-dev most \
+      iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof hxtools \
     && apt-get clean --assume-yes \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
@@ -528,28 +528,24 @@ RUN cd /tmp \
 RUN cd /opt \
     && git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
-COPY qt-installer-script.qs /tmp
-#COPY qt-opensource-linux-x64-${Q_VERSION}.run* /tmp
-# RUN objdump -p ./qt-opensource-linux-x64-${Q_VERSION}.run | grep NEEDED
+COPY qt-installer-script.qs qt-opensource-linux-x64-* /tmp/
 
-#RUN cd /tmp \
-#    && if [[ -n $CI_DOMAIN ]]; then \
-#            curl -k -L -O "http://download.qt.io/official_releases/qt/${Q_MAJOR_VERSION}/${Q_VERSION}/qt-opensource-linux-x64-${Q_VERSION}.run"; \
-#        else \
-#            : ; \
-#        fi
+#RUN objdump -p ./qt-opensource-linux-x64-${Q_VERSION}.run | grep NEEDED
 
 RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && curl -k -L -O "http://download.qt.io/official_releases/qt/${Q_MAJOR_VERSION}/${Q_VERSION}/qt-opensource-linux-x64-${Q_VERSION}.run" \
-    && chmod +x ./qt-installer-script.qs \
-    && chmod +x ./qt-opensource-linux-x64-${Q_VERSION}.run \
-    && xvfb-run ./qt-opensource-linux-x64-${Q_VERSION}.run --script ./qt-installer-script.qs --platform minimal --verbose > /dev/null 2>&1 \
-    && rm -vf qt-opensource-linux-x64-${Q_VERSION}.run qt-installer-script.qs \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+   && TimePoint="$(date +%s)" \
+   && if [ ! -f "/tmp/qt-opensource-linux-x64-${Q_VERSION}.run" ]; \
+		then \
+			curl -k -L -O "http://download.qt.io/official_releases/qt/${Q_MAJOR_VERSION}/${Q_VERSION}/qt-opensource-linux-x64-${Q_VERSION}.run"; \
+		fi \
+   && chmod +x ./qt-installer-script.qs \
+   && chmod +x ./qt-opensource-linux-x64-${Q_VERSION}.run \
+   && xvfb-run ./qt-opensource-linux-x64-${Q_VERSION}.run --script ./qt-installer-script.qs --platform minimal --verbose \
+   && rm -vf qt-opensource-linux-x64-${Q_VERSION}.run qt-installer-script.qs \
+   && TimePoint="$(($(date +%s)-TimePoint))" \
+   && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-ENV QT_INSTALL_DIR=/opt/qt
+ENV QT_INSTALL_DIR=/opt/Qt
 ENV QTDIR=${QT_INSTALL_DIR}/${Q_VERSION}/gcc_64
 ENV PATH="${QTDIR}/bin/:${QT_INSTALL_DIR}/Tools/QtCreator/bin:${PATH}:/opt/depot_tools"
 ENV PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
@@ -586,8 +582,114 @@ RUN cd /tmp \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && curl -L -O -k https://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz \
+    && tar -xzf gsl-2.6.tar.gz \
+    && cd gsl-2.6 \
+    && ./autogen.sh \
+    && ./configure --enable-maintainer-mode --prefix=/usr/local \
+    && make -j$(nproc) > /dev/null 2>&1 \
+    && make install \
+    && cd /tmp \
+    && rm -rf gsl-2.6.tar.gz gsl-2.6 \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && git clone --depth=1 https://github.com/eigenteam/eigen-git-mirror.git \
+    && cd eigen-git-mirror \
+    && cmake -E make_directory build \
+    && cmake -E chdir build cmake .. -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_CXX_FLAGS="-std=c++11" \
+    && cmake --build build --target all --clean-first > /dev/null 2>&1 \
+    && cmake --build build --target install \
+    && cd /tmp/ \
+    && rm -Rf eigen-git-mirror \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && git clone --depth=1  https://github.com/ginkgo-project/ginkgo.git \
+    && cd ginkgo \
+    && cmake -E make_directory build \
+    && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
+        -DGINKGO_BUILD_TESTS=OFF -DGINKGO_BUILD_EXAMPLES=OFF \
+        -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ \
+        -DGINKGO_DEVEL_TOOLS=OFF -DGINKGO_BUILD_REFERENCE=ON \
+        -DCMAKE_BUILD_TYPE=Release \
+    && cmake --build build --target all --clean-first > /dev/null 2>&1 \
+    && cmake --build build --target install \
+    && cd /tmp \
+    && rm -rf ginkgo \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && git clone --depth=1 https://github.com/CGAL/cgal.git \
+    && cd cgal \
+    && cmake -E make_directory cgal-build \
+    && cmake -E chdir cgal-build cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_FLAGS="-std=c++14" -DCGAL_HEADER_ONLY=OFF \
+      -DCMAKE_CXX_FLAGS_RELEASE=-DCGAL_NDEBUG -DWITH_examples=OFF \
+      -DWITH_demos=OFF -DWITH_tests=OFF \
+      -DCMAKE_INSTALL_PREFIX=/usr/local .. \
+    && cmake --build cgal-build --target all --clean-first > /dev/null 2>&1 \
+    && cmake --build cgal-build --target install \
+    && cd /tmp/ \
+    && rm -Rf cgal \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && git clone --depth=1 https://github.com/QuantStack/xsimd.git \
+    && cd xsimd \
+    && cmake -E make_directory xsimd-build \
+    && cmake -E chdir xsimd-build cmake -DCMAKE_BUILD_TYPE=Release \
+       -DCMAKE_INSTALL_PREFIX=/usr/local .. \
+    && cmake --build xsimd-build --target all --clean-first > /dev/null 2>&1 \
+    && cmake --build xsimd-build --target install \
+    && cd /tmp/ \
+    && rm -Rf xsimd \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+RUN cd /tmp \
+    && git clone --depth=1 https://github.com/google/capture-thread.git \
+    && cd capture-thread \
+    && cmake -E make_directory build \
+    && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local  \
+    && cmake --build build --target all --clean-first  \
+    && cmake --build build --target install \
+    && cd /tmp \
+    && rm -rf capture-thread
+
+RUN echo -e '\033[36;1m ******* Below are commented section to investigate ******** \033[0m'
 
 ARG GST_VERSION=1.16.0
+
+# need libjpeg-dev
+# RUN cd /tmp \
+    # && git clone --depth=1 https://github.com/Motion-Project/motion.git \
+    # && cd motion \
+    # && autoreconf -fiv \
+    # && ./configure --without-ffmpeg --prefix=/usr/local \
+    # && make clean  \
+    # && make \
+    # && make install \
+    # && cd /tmp \
+    # && rm -fr motion
+
+# RUN cd /tmp \
+    # && TimePoint="$(date +%s)" \
+    # && git clone  --depth=1 git://git.linuxtv.org/v4l-utils.git \
+    # && cd v4l-utils \
+    # && autoreconf -vfi \
+    # && ./configure --prefix=/usr/local \
+    # && make > /dev/null 2>&1 \
+    # && make install \
+    # && cd /tmp/ \
+    # && rm -Rf v4l-utils \
+    # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 # http://www.linuxfromscratch.org/blfs/view/svn/multimedia/gstreamer10.html
 # RUN cd /tmp \
@@ -727,91 +829,6 @@ ARG GST_VERSION=1.16.0
     # && rm -rf gst-* \
     # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && curl -L -O -k https://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz \
-    && tar -xzf gsl-2.6.tar.gz \
-    && cd gsl-2.6 \
-    && ./autogen.sh \
-    && ./configure --enable-maintainer-mode --prefix=/usr/local \
-    && make -j$(nproc) > /dev/null 2>&1 \
-    && make install \
-    && cd /tmp \
-    && rm -rf gsl-2.6.tar.gz gsl-2.6 \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1 https://github.com/eigenteam/eigen-git-mirror.git \
-    && cd eigen-git-mirror \
-    && cmake -E make_directory build \
-    && cmake -E chdir build cmake .. -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_CXX_FLAGS="-std=c++11" \
-    && cmake --build build --target all --clean-first > /dev/null 2>&1 \
-    && cmake --build build --target install \
-    && cd /tmp/ \
-    && rm -Rf eigen-git-mirror \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1  https://github.com/ginkgo-project/ginkgo.git \
-    && cd ginkgo \
-    && cmake -E make_directory build \
-    && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
-        -DGINKGO_BUILD_TESTS=OFF -DGINKGO_BUILD_EXAMPLES=OFF \
-        -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ \
-        -DGINKGO_DEVEL_TOOLS=OFF -DGINKGO_BUILD_REFERENCE=ON \
-        -DCMAKE_BUILD_TYPE=Release \
-    && cmake --build build --target all --clean-first > /dev/null 2>&1 \
-    && cmake --build build --target install \
-    && cd /tmp \
-    && rm -rf ginkgo \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1 https://github.com/CGAL/cgal.git \
-    && cd cgal \
-    && cmake -E make_directory cgal-build \
-    && cmake -E chdir cgal-build cmake -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_CXX_FLAGS="-std=c++14" -DCGAL_HEADER_ONLY=OFF \
-      -DCMAKE_CXX_FLAGS_RELEASE=-DCGAL_NDEBUG -DWITH_examples=OFF \
-      -DWITH_demos=OFF -DWITH_tests=OFF \
-      -DCMAKE_INSTALL_PREFIX=/usr/local .. \
-    && cmake --build cgal-build --target all --clean-first > /dev/null 2>&1 \
-    && cmake --build cgal-build --target install \
-    && cd /tmp/ \
-    && rm -Rf cgal \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-# RUN cd /tmp \
-    # && TimePoint="$(date +%s)" \
-    # && git clone  --depth=1 git://git.linuxtv.org/v4l-utils.git \
-    # && cd v4l-utils \
-    # && autoreconf -vfi \
-    # && ./configure --prefix=/usr/local \
-    # && make > /dev/null 2>&1 \
-    # && make install \
-    # && cd /tmp/ \
-    # && rm -Rf v4l-utils \
-    # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1 https://github.com/QuantStack/xsimd.git \
-    && cd xsimd \
-    && cmake -E make_directory xsimd-build \
-    && cmake -E chdir xsimd-build cmake -DCMAKE_BUILD_TYPE=Release \
-       -DCMAKE_INSTALL_PREFIX=/usr/local .. \
-    && cmake --build xsimd-build --target all --clean-first > /dev/null 2>&1 \
-    && cmake --build xsimd-build --target install \
-    && cd /tmp/ \
-    && rm -Rf xsimd \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-RUN echo -e '\033[36;1m ******* Below are commented section to investigate ******** \033[0m'
-
 # Clone the other GStreamer modules as meson subprojects and build everything in one go.
 # RUN cd /tmp \
     # && TimePoint="$(date +%s)" \
@@ -889,7 +906,7 @@ RUN echo -e '\033[36;1m ******* Below are commented section to investigate *****
 #    && cd dealii \
 #    && cmake -E make_directory build \
 #    && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
-#        -DCMAKE_BUILD_TYPE=Release \
+#        -DCMAKE_BUILD_TYPE=Release -DDEAL_II_WITH_MPI=ON -DDEAL_II_COMPONENT_EXAMPLES=OFF\
 #    && cmake --build build --target all --clean-first > /dev/null 2>&1 \
 #    && cmake --build build --target install > /dev/null 2>&1 \
 #    && cd /tmp \
@@ -1030,28 +1047,6 @@ RUN echo -e '\033[36;1m ******* Below are commented section to investigate *****
    # && make install \
    # && cd /tmp/ \
    # && rm -rf /gstreamer
-
-# need libjpeg-dev
-RUN cd /tmp \
-    && git clone --depth=1 https://github.com/Motion-Project/motion.git \
-    && cd motion \
-    && autoreconf -fiv \
-    && ./configure --without-ffmpeg --prefix=/usr/local \
-    && make clean  \
-    && make \
-    && make install \
-    && cd /tmp \
-    && rm -fr motion
-
-RUN cd /tmp \
-    && git clone --depth=1 https://github.com/google/capture-thread.git \
-    && cd capture-thread \
-    && cmake -E make_directory build \
-    && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local  \
-    && cmake --build build --target all --clean-first  \
-    && cmake --build build --target install \
-    && cd /tmp \
-    && rm -rf capture-thread
 
 # http://www.smcc.demon.nl/camstream/download/camstream-0.27.tar.gz
 # http://smcc.demon.nl/archief/camstream-0.26.3.tar.gz
