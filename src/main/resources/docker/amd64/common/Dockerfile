@@ -79,6 +79,7 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
       libogg-dev liboggz2-dev python-ogg libisocodes-dev gir1.2-isocodes-1.2 libpng++-dev \
       libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
       iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof hxtools \
+      gcovr lcov node-lcov-parse \
     && apt-get clean --assume-yes \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
@@ -1183,6 +1184,26 @@ RUN cd /tmp \
 # Do some cleanup
 RUN DEBIAN_FRONTEND=noninteractive  apt-get clean && \
   apt-get autoremove -y
+
+# Set default UID and GID to create user with
+# ENV USERID 1001
+# ENV GROUPID 1001
+
+# RUN mkdir -p /home/developer \
+    # && echo "developer:x:${USERID}:${GROUPID}:Developer,,,:/home/developer:/bin/bash" >> /etc/passwd \
+    # && echo "developer:x:${USERID}:" >> /etc/group \
+    # && chown ${USERID}:${GROUPID} -R /home/working \
+    # && cp /root/.bashrc /home/developer \
+    # && usermod -m -d /home/developer developer \
+    # && echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer \
+    # && chmod 0440 /etc/sudoers.d/developer \
+    # && chown ${USERID}:${GROUPID} -R /home/developer
+
+# WORKDIR /home/working
+# ENTRYPOINT usermod -u $USERID developer \
+    # &&groupmod -g $GROUPID developer \
+    # && su developer \
+    # bash
 
 RUN echo -e '\033[36;1m ******* CONTAINER START COMMAND ******** \033[0m'
 CMD ["/bin/bash"]

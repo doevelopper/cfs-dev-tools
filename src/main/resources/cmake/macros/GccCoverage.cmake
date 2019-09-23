@@ -23,7 +23,7 @@ else()
     list(APPEND LCOV_GENTHML_OPTIONS "--no-function-coverage")
 endif()
 
-set(LCOV_EXTRA_ARGS --base-directory "${CPP_SOURCE_DIR}" 
+set(LCOV_EXTRA_ARGS --base-directory "${CPP_SOURCE_DIR}"
     --directory "${OUTPUT_DIR}"
     --no-external
     --gcov-tool "${COVERAGE_COMMAND}"
@@ -49,31 +49,31 @@ set(GENHTML_EXTRA_ARGS --show-details --frames --legend
     set(CMAKE_CXX_FLAGS_COVERAGE
         "${COVERAGE_FLAGS} -fprofile-arcs -ftest-coverage"
         CACHE STRING "Flags used by the C++ compiler during coverage builds."
-        FORCE 
+        FORCE
     )
 
     set(CMAKE_C_FLAGS_COVERAGE
         "${COVERAGE_FLAGS} -fprofile-arcs -ftest-coverage"
         CACHE STRING "Flags used by the C compiler during coverage builds."
-        FORCE 
+        FORCE
     )
 
     set(CMAKE_EXE_LINKER_FLAGS_COVERAGE
         "${COVERAGE_LINK_FLAGS}"
         CACHE STRING "Flags used for linking binaries during coverage builds."
-        FORCE 
+        FORCE
     )
 
     set(CMAKE_STATIC_LINKER_FLAGS_COVERAGE
         "${CMAKE_STATIC_LINKER_FLAGS_DEBUG}"
         CACHE STRING "Flags used by the static libraries linker during coverage builds."
-        FORCE 
+        FORCE
     )
 
     set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
         "${COVERAGE_LINK_FLAGS}"
         CACHE STRING "Flags used by the shared libraries linker during coverage builds."
-        FORCE 
+        FORCE
     )
 
     mark_as_advanced(
@@ -93,9 +93,10 @@ function(add_code_coverage_targets test_target module_name module_directory)
         find_program(GENHTML genhtml)
         find_program(LCOV lcov)
         find_program(GENINFO geninfo)
+        find_program(GENDESC gendesc)
 
         mark_as_advanced(LCOV GENINFO GENHTML GCOVR)
-		
+
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS_COVERAGE}")
         set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS_COVERAGE}")
 

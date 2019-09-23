@@ -52,6 +52,6 @@ namespace cfs::dev::tools
 namespace std
 {
   template <>
-  struct is_error_code_enum<tf::Error::Code> : true_type {};
+  struct is_error_code_enum<cfs::dev::tools::Error::Code> : true_type {};
 }
 
