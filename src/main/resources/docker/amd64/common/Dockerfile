@@ -79,14 +79,14 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
       libogg-dev liboggz2-dev python-ogg libisocodes-dev gir1.2-isocodes-1.2 libpng++-dev \
       libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
       iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof hxtools \
-      gcovr lcov node-lcov-parse \
+      gcovr lcov node-lcov-parse tmux \
     && apt-get clean --assume-yes \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
     && rm -rvf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/* \
     && rm -rf /usr/share/man/
 
-      # libavutil-dev libavformat-dev libavcodec-dev libswscale-dev libavdevice-dev
+# libavutil-dev libavformat-dev libavcodec-dev libswscale-dev libavdevice-dev
 ##setting up the apt so it will run through the proxy
 # RUN [ -n "$http_proxy" ] && echo "Acquire::http::proxy \"$http_proxy\";" > /etc/apt/apt.conf; \
     # [ -n "$https_proxy" ] && echo "Acquire::https::proxy \"$https_proxy\";" >> /etc/apt/apt.conf; \

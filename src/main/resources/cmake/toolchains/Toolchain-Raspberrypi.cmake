@@ -8,21 +8,27 @@ set(CROSS_COMPILER_ROOT $ENV{CROSS_COMPILER_ROOT})
 # Default system settings
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_VERSION 1)
-set(CMAKE_SYSTEM_PROCESSOR arm)
+set(CMAKE_SYSTEM_PROCESSOR aarch64)
 
 # #Specify the cross compiler
 # SET(CMAKE_C_COMPILER $ENV{HOME}/rpi/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-gcc)
 # SET(CMAKE_CXX_COMPILER $ENV{HOME}/rpi/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-g++)
 
-set (CMAKE_C_COMPILER   ${RPI_PREFIX}-gcc     CACHE PATH    "C compiler")
-set (CMAKE_CXX_COMPILER ${RPI_PREFIX}-c++     CACHE PATH    "C++ compiler")
-set (CMAKE_STRIP        ${RPI_PREFIX}-strip   CACHE PATH    "strip")
-set (CMAKE_AR           ${RPI_PREFIX}-ar      CACHE PATH    "archive")
-set (CMAKE_LINKER       ${RPI_PREFIX}-ld      CACHE PATH    "linker")
-set (CMAKE_NM           ${RPI_PREFIX}-nm      CACHE PATH    "nm")
-set (CMAKE_OBJCOPY      ${RPI_PREFIX}-objcopy CACHE PATH    "objcopy")
-set (CMAKE_OBJDUMP      ${RPI_PREFIX}-objdump CACHE PATH    "objdump")
-set (CMAKE_RANLIB       ${RPI_PREFIX}-ranlib  CACHE PATH    "ranlib")
+set(CMAKE_C_COMPILER   ${RPI_PREFIX}-gcc     CACHE PATH    "C compiler")
+set(CMAKE_CXX_COMPILER ${RPI_PREFIX}-c++     CACHE PATH    "C++ compiler")
+set(CMAKE_STRIP        ${RPI_PREFIX}-strip   CACHE PATH    "strip")
+set(CMAKE_AR           ${RPI_PREFIX}-ar      CACHE PATH    "archive")
+set(CMAKE_LINKER       ${RPI_PREFIX}-ld      CACHE PATH    "linker")
+set(CMAKE_NM           ${RPI_PREFIX}-nm      CACHE PATH    "nm")
+set(CMAKE_OBJCOPY      ${RPI_PREFIX}-objcopy CACHE PATH    "objcopy")
+set(CMAKE_OBJDUMP      ${RPI_PREFIX}-objdump CACHE PATH    "objdump")
+set(CMAKE_RANLIB       ${RPI_PREFIX}-ranlib  CACHE PATH    "ranlib")
+set(CMAKE_CXX_COMPILER_TARGET_FORCED TRUE)
+set(CMAKE_C_COMPILER_TARGET_FORCED TRUE)
+set(CMAKE_C_COMPILER_TARGET aarch64)
+set(CMAKE_CXX_COMPILER_TARGET aarch64)
+add_definitions(-D__AARCH64_GNU__)
+set(CMAKE_LINKER /usr/bin/${CMAKE_SYSTEM_PROCESSOR}-linux-gnu-ld)
 
 # #Where is the target environment
 # SET(CMAKE_FIND_ROOT_PATH $ENV{HOME}/rpi/rootfs)
@@ -52,6 +58,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_CXX_FLAGS "-std=c++14 -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" CACHE STRING "C++ flags" FORCE)
 set(CMAKE_C_FLAGS "-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard" CACHE STRING "C flags" FORCE)
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,-rpath-link,${CROSS_COMPILER_ROOT}/arm-linux-gnueabihf/libc/lib/arm-linux-gnueabihf" CACHE STRING "Linker flags" FORCE)
-
+set(LINKER_FLAGS "-Wl,--no-undefined -Wl,--gc-sections -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now,-lc -pthread -lpthread -ldl")
 # help cmake use the right thread library
 set(DCMAKE_THREAD_LIBS_INIT ${CROSS_COMPILER_ROOT}/arm-linux-gnueabihf/libc/lib/arm-linux-gnueabihf/libpthread.so.0)
+set(CMAKE_SYSTEM_PREFIX_PATH "/usr/aarch64-linux-gnu")
+

@@ -53,8 +53,47 @@ ARG DDS_BUILD_DISSECT_OPTIONS="--qt --wireshark=/usr/local/"
 ARG DDS_BASE_DIR=/opt/dds
 ARG DDS_INSTALL_DIR=/opt/dds_install
 
-ARG PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH};}${QT_DIR}"
+RUN cd /tmp \
+    && GIT_SSL_NO_VERIFY=1 git clone --depth=1 --recurse-submodules https://github.com/wireshark/wireshark.git \
+    && cd wireshark \
+    && cmake -E make_directory wireshark-build \
+    && export CMAKE_PREFIX_PATH=${QTDIR}:${CMAKE_PREFIX_PATH} \
+    && cmake -E chdir wireshark-build cmake .. \
+        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local \
+        -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/wireshark \
+        -DDUMPCAP_INSTALL_OPTION=suid \
+    && cmake --build wireshark-build --target all --parallel
+#    && cmake --build wireshark-build --target install --parallel \
+#    && cd /tmp \
+#    && rm -Rf wireshark
 
+
+RUN cd /tmp \
+    && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/MPC.git \
+    && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/ACE_TAO.git \
+    && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/XSC.git \
+    && cd XSC \
+    && export ACE_TAO_ROOT=/tmp/ACE_TAO \
+    && export ACE_ROOT=$ACE_TAO_ROOT/ACE \
+    && export TAO_ROOT=$ACE_TAO_ROOT/TAO \
+    && export MPC_ROOT=/tmp/MPC \
+    && export XSC_ROOT=/tmp/XSC \
+    && export LD_LIBRARY_PATH=$ACE_ROOT/lib:${XSC_ROOT}/XSC/utils:${XSC_ROOT}/lib:/usr/local/lib/:$LD_LIBRARY_PATH \
+    && echo "#include \"ace/config-linux.h\"" >> $ACE_ROOT/ace/config.h \
+    && echo "boost=1\nxsc=1\nxerces3=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
+    && echo "c++11=1\nssl=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
+    && echo "INSTALL_PREFIX=$(DDS_INSTALL_DIR)" >> $(ACE_ROOT)/include/makeinclude/platform_macros.GNU
+    && echo "include \$(ACE_ROOT)/include/makeinclude/platform_linux.GNU" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
+    && echo "boost=1\nxerces3=1\nxsc=1\n" >> $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
+    && cat $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
+    && cat $ACE_ROOT/ace/config.h \
+    && cat $ACE_ROOT/include/makeinclude/platform_macros.GNU \
+    && perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 4 XSC.mwc \
+    && mkdir -pv ${DDS_INSTALL_DIR}/XSC \
+    && make -j$(nproc)
+    # && INSTALL_PREFIX=${DDS_INSTALL_DIR}/XSC make install \
+    # && cd /tmp \
+    # && rm -rf  mpc ACE_TAO CIAO DAnCE XSC
 # RUN cd /tmp/ \
     # && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/MPC.git \
     # && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/ACE_TAO.git
@@ -71,7 +110,7 @@ ARG PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH};}${QT_DIR}"
     # && echo "\$(ACE_ROOT)/ace/ace.mwc\n" >> $ACE_TAO_ROOT/ACE_TAO.mwc \
     # && echo "}\n" >> $ACE_TAO_ROOT/ACE_TAO.mwc \
     # && rm -vf $ACE_ROOT/include/makeinclude/platform*.GNU \
-    # && echo "include \$(ACE_ROOT)/include/makeinclude/platform_linux.GNU" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
+    # && echo "include \"$(ACE_ROOT)/include/makeinclude/platform_linux.GNU" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
     # && echo "#define ACE_FACE_SAFETY_BASE" >> $ACE_ROOT/ace/config.h \
     # && echo "corba_e_micro=1" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
     # && echo "corba_e_micro=1" >> $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
@@ -87,6 +126,7 @@ ARG PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH};}${QT_DIR}"
     # && echo "inline=0\nipv6=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
     # && echo "xerces3=1\nssl=1\n" >> $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
     # && echo "c++11=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
+    # && echo "INSTALL_PREFIX=$(ACE_INSTALL_PATH)" >> $(ACE_ROOT)/include/makeinclude/platform_macros.GNU \
     # && cat $ACE_TAO_ROOT/ACE_TAO.mwc \
     # && cat $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
     # && cat $ACE_ROOT/ace/config.h \
@@ -94,7 +134,7 @@ ARG PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH};}${QT_DIR}"
     # && perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 ACE_TAO.mwc \
     # && perl $ACE_ROOT/bin/mwc.pl  -type gnuace $TAO_ROOT/TAO_ACE.mwc \
     # && cd $ACE_ROOT \
-    # && perl $ACE_ROOT/bin/mwc.pl -type gnuace -features ssl=1,qt5=1,qos=1,ace_for_tao=1 ACE.mwc \
+    # && perl $ACE_ROOT/bin/mwc.pl -type gnuace -features "ssl=1,qt5=1,qos=1,ace_for_tao=1" ACE.mwc \
     # && make realclean \
     # && make -j$(nproc) \
     # && mkdir -pv ${DDS_INSTALL_DIR}/ACE_TAO \
@@ -106,10 +146,6 @@ ARG PREFIX_PATH="${CMAKE_PREFIX_PATH:+${CMAKE_PREFIX_PATH};}${QT_DIR}"
     # && cd $TAO_ROOT \
     # && make \
     # && cd ..
-
-ARG GET_DDS_VERSION="DDS-3.13-2"
-ARG DDS_SRCS_LINUX="https://github.com/objectcomputing/OpenDDS/releases/download/DDS-3.13.2/OpenDDS-3.13.2.tar.gz"
-ARG DDS_REPO="https://github.com/objectcomputing/OpenDDS.git"
 
 # RUN cd ${DDS_BASE_DIR} \
     # && cd DAnCE \
@@ -143,25 +179,6 @@ ARG DDS_REPO="https://github.com/objectcomputing/OpenDDS.git"
     # && make -j$(nproc) \
     # && mkdir -pv ${DDS_INSTALL_DIR}/DAnCE \
     # && INSTALL_PREFIX=${DDS_INSTALL_DIR}/DAnCE make install
-
-RUN cd /tmp \
-    && GIT_SSL_NO_VERIFY=1 git clone --depth=1 --recurse-submodules https://github.com/wireshark/wireshark.git
-
-ENV CMAKE_PREFIX_PATH=${QTDIR}:${CMAKE_PREFIX_PATH}
-
-# RUN cd /tmp \
-    # && cd wireshark \
-    # && cmake -E make_directory wireshark-build \
-    ## && cmake -E chdir wireshark-build cmake .. -DCMAKE_PREFIX_PATH=${PREFIX_PATH} \
-    ## && export CMAKE_PREFIX_PATH=${QTDIR}:${CMAKE_PREFIX_PATH} \
-    # && cmake -E chdir wireshark-build cmake .. \
-        # -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local \
-        # -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/wireshark \
-        # -DDUMPCAP_INSTALL_OPTION=suid \
-    # && make -C wireshark-build -j$(nproc) \
-    # && make -C wireshark-build -j$(nproc) install\
-    # cd /tmp \
-    # rm -Rf wireshark
 
 RUN mkdir -pv ${DDS_BASE_DIR} \
     && cd ${DDS_BASE_DIR} \
