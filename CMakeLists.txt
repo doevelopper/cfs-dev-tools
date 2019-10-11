@@ -28,7 +28,7 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 project (cfs.dev.tools
     VERSION 1.0.0.0
-    DESCRIPTION "Usefull cmake scripts and oders tools used for my projects"
+    DESCRIPTION "Docker images creation and dummy  libraies and application to validate contents"
     HOMEPAGE_URL "https://exemple.com"
     LANGUAGES CXX
 )
