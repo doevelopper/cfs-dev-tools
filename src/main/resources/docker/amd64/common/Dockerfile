@@ -22,12 +22,12 @@
 #        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #
 
-ARG BASE_IMAGE=amd64/ubuntu:19.04
+ARG BASE_IMAGE=amd64/ubuntu:19.10
 FROM $BASE_IMAGE
 
 #docker build --build-arg PROXY=$HTTP_PROXY
 ARG PROXY
-ARG MAKEFLAGS
+ARG MAKEFLAGS_OPTIONS
 ARG NOPROXY
 ARG http_proxy=$PROXY
 ARG https_proxy=$PROXY
@@ -36,10 +36,10 @@ ARG HTTP_PROXY=$PROXY
 ARG HTTPS_PROXY=$PROXY
 ARG NO_PROXY=$NOPROXY
 ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.15}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.3}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.4}
 ARG MVN_VERSION=${MVN_VERSION:-3.6.2}
 ARG GRADLE_VERSION=${GRADLE_VERSION:-5.6.2}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-0.29.1}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-1.0.0}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
 ARG BOOST_VERSION_PATCH=0
@@ -79,7 +79,7 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
       libogg-dev liboggz2-dev python-ogg libisocodes-dev gir1.2-isocodes-1.2 libpng++-dev \
       libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
       iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof hxtools \
-      gcovr lcov node-lcov-parse tmux \
+      ccache gcovr lcov node-lcov-parse tmux \
     && apt-get clean --assume-yes \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
@@ -674,7 +674,7 @@ RUN cd /tmp \
 
 RUN echo -e '\033[36;1m ******* Below are commented section to investigate ******** \033[0m'
 
-ARG GST_VERSION=1.16.0
+ARG GST_VERSION=1.16.1
 
 # need libjpeg-dev
 RUN cd /tmp \
@@ -701,6 +701,16 @@ RUN cd /tmp \
     && make install \
     && cd /tmp/ \
     && rm -Rf v4l-utils \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+#Automated static analysis tools for binary programs
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && git clone  --depth=1 https://github.com/cmu-sei/pharos.git \
+    && cd pharos \
+    && cd /tmp/ \
+    # && rm -Rf pharos \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 

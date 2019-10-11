@@ -21,7 +21,7 @@
 #        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #
 
-ARG DDS_DEV_IMAGE=docker.io/doevelopper/cfs-com-common:latest
+ARG DDS_DEV_IMAGE=docker.io/doevelopper/cfs-dev-tools-common:0.0.1
 FROM $DDS_DEV_IMAGE
 
 USER root
@@ -32,8 +32,8 @@ RUN cd /tmp \
     && cmake -E chdir build cmake .. -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_CXX_FLAGS="-Wall -Wextra -pedantic" -DCMAKE_INSTALL_PREFIX=/usr/local \
         -DBUILD_SHARED_LIBS=ON \
-    && cmake --build build --target all --clean-first > /dev/null 2>&1 \
-    && cmake --build build --target install > /dev/null 2>&1 \
+    && cmake --build build --target all --clean-first --parallel \
+    && cmake --build build --target install \
     && cd /tmp \
     && rm -rf memory
 
@@ -49,8 +49,8 @@ RUN cd /tmp \
         -DTHIRDPARTY=ON -DBUILD_JAVA=ON -DPERFORMANCE_TESTS=ON  \
         -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON  \
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON\
-    && cmake --build build --target all --clean-first > /dev/null \
-    && cmake --build build --target install > /dev/null \
+    && cmake --build build --target all --clean-first \
+    && cmake --build build --target install \
     && cd /tmp \
     && rm -rf Fast-RTPS
 
@@ -66,26 +66,37 @@ RUN cd /tmp \
     && cd /tmp \
     && rm -rf Micro-XRCE-DDS
 
-#RUN cd /tmp \
-#    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Integration-Service.git \
-#    && cd Integration-Service \
-#    && cmake -E make_directory service-build \
-#    && cmake -E chdir service-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/dds-int-svc \
-##        -DCMAKE_PREFIX_PATH="/usr/local;/usr/local/xrce-dds" \
-#    && cmake --build service-build --target all --clean-first \
-#    && cmake --build service-build --target install \
-#    && cd /tmp \
-#    && rm -rf Integration-Service
+# RUN cd /tmp \
+    # && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Integration-Service.git \
+    # && cd Integration-Service \
+    # && cmake -E make_directory service-build \
+    # && cmake -E chdir service-build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
+    #   # -DCMAKE_PREFIX_PATH="/usr/local;/usr/local/xrce-dds" \
+    # && cmake --build service-build --target all --clean-first \
+    # && cmake --build service-build --target install \
+    # && cd /tmp \
+    # && rm -rf Integration-Service
 
-#RUN cd /tmp \
-#    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Discovery-Server.git \
-#    && cd Discovery-Server \
-#    && cmake -E make_directory discovery-build \
-#    && cmake -E chdir discovery-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/disco-svr \
-#    && cmake --build discovery-build --target all --clean-first \
-#    && cmake --build discovery-build --target install \
-#    && cd /tmp \
-#    && rm -rf Discovery-Server
+# RUN cd /tmp \
+    # && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Discovery-Server.git \
+    # && cd Discovery-Server \
+    # && cmake -E make_directory discovery-build \
+    # && cmake -E chdir discovery-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/disco-svr \
+    # && cmake --build discovery-build --target all --clean-first \
+    # && cmake --build discovery-build --target install \
+    # && cd /tmp \
+    # && rm -rf Discovery-Server
+
+# RUN cd /tmp \
+    # && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Non-Intrusive-DDS-Recorder.git \
+    # && cd Non-Intrusive-DDS-Recorder \
+    # && cmake -E make_directory Recorder-build \
+    # && cmake -E chdir Recorder-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/dds-rec \
+    # && cmake --build discovery-build --target all --clean-first \
+    # && cmake --build discovery-build --target install \
+    # && cd /tmp \
+    # && rm -rf Non-Intrusive-DDS-Recorder
+
 
 ARG ACCOUNT=${ACCOUNT:-developer}
 RUN adduser --system --home /home/${ACCOUNT} --shell /bin/bash \

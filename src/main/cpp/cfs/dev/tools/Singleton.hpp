@@ -9,7 +9,7 @@
 namespace cfs::dev::tools
 {
     template<class Mutex, class Lock = std::unique_lock<Mutex>>
-    Lock make_lock(Mutex& mutex)
+    Lock make_lock(Mutex & mutex)
     {
         return Lock(mutex);
     }

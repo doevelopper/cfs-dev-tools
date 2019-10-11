@@ -21,7 +21,7 @@
 #        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #
 
-ARG DDS_DEV_IMAGE=docker.io/doevelopper/cfs-com-common:latest
+ARG DDS_DEV_IMAGE=docker.io/doevelopper/cfs-dev-tools-common:0.0.1
 FROM $DDS_DEV_IMAGE
 
 USER root
@@ -51,7 +51,7 @@ ARG EXTENDED_DDS_BUILD_SECURITY_OPTIONS="--security --safety-profile=base"
 ARG DDS_BUILD_DISSECT_OPTIONS="--qt --wireshark=/usr/local/"
 
 ARG DDS_BASE_DIR=/opt/dds
-ARG DDS_INSTALL_DIR=/opt/dds_install
+ARG DDS_INSTALL_DIR=/opt/dds
 
 RUN cd /tmp \
     && GIT_SSL_NO_VERIFY=1 git clone --depth=1 --recurse-submodules https://github.com/wireshark/wireshark.git \
@@ -59,19 +59,21 @@ RUN cd /tmp \
     && cmake -E make_directory wireshark-build \
     && export CMAKE_PREFIX_PATH=${QTDIR}:${CMAKE_PREFIX_PATH} \
     && cmake -E chdir wireshark-build cmake .. \
-        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local \
-        -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/wireshark \
+        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${DDS_INSTALL_DIR} \
+#        -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/wireshark \
         -DDUMPCAP_INSTALL_OPTION=suid \
-    && cmake --build wireshark-build --target all --parallel
-#    && cmake --build wireshark-build --target install --parallel \
-#    && cd /tmp \
+    && cmake --build wireshark-build --target all \
+    && cmake --build wireshark-build --target install \
+    && cd /tmp
 #    && rm -Rf wireshark
 
 
 RUN cd /tmp \
     && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/MPC.git \
     && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/ACE_TAO.git \
-    && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/XSC.git \
+    && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/XSC.git
+
+RUN cd /tmp \
     && cd XSC \
     && export ACE_TAO_ROOT=/tmp/ACE_TAO \
     && export ACE_ROOT=$ACE_TAO_ROOT/ACE \
@@ -82,18 +84,18 @@ RUN cd /tmp \
     && echo "#include \"ace/config-linux.h\"" >> $ACE_ROOT/ace/config.h \
     && echo "boost=1\nxsc=1\nxerces3=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
     && echo "c++11=1\nssl=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
-    && echo "INSTALL_PREFIX=$(DDS_INSTALL_DIR)" >> $(ACE_ROOT)/include/makeinclude/platform_macros.GNU
+    && echo "INSTALL_PREFIX=$DDS_INSTALL_DIR" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
     && echo "include \$(ACE_ROOT)/include/makeinclude/platform_linux.GNU" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
     && echo "boost=1\nxerces3=1\nxsc=1\n" >> $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
     && cat $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
     && cat $ACE_ROOT/ace/config.h \
     && cat $ACE_ROOT/include/makeinclude/platform_macros.GNU \
-    && perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 4 XSC.mwc \
-    && mkdir -pv ${DDS_INSTALL_DIR}/XSC \
-    && make -j$(nproc)
-    # && INSTALL_PREFIX=${DDS_INSTALL_DIR}/XSC make install \
-    # && cd /tmp \
-    # && rm -rf  mpc ACE_TAO CIAO DAnCE XSC
+    && perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 XSC.mwc \
+    && make -j$(nproc) \
+    && make install \
+    && cd /tmp \
+    && rm -rf  mpc ACE_TAO CIAO DAnCE XSC
+
 # RUN cd /tmp/ \
     # && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/MPC.git \
     # && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/ACE_TAO.git
@@ -180,60 +182,66 @@ RUN cd /tmp \
     # && mkdir -pv ${DDS_INSTALL_DIR}/DAnCE \
     # && INSTALL_PREFIX=${DDS_INSTALL_DIR}/DAnCE make install
 
-RUN mkdir -pv ${DDS_BASE_DIR} \
-    && cd ${DDS_BASE_DIR} \
-    && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/MPC.git \
-    && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/ACE_TAO.git \
-    && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/CIAO.git \
-    && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/DAnCE.git \
-    && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/XSC.git \
+RUN cd /tmp \
+    && rm -Rvf MPC \
+    && git clone --depth=1 https://github.com/DOCGroup/MPC.git \
+    && git clone --depth=1 https://github.com/DOCGroup/ACE_TAO.git \
+    && git clone --depth=1 https://github.com/DOCGroup/CIAO.git \
+    && git clone --depth=1 https://github.com/DOCGroup/DAnCE.git \
+    && git clone --depth=1 https://github.com/DOCGroup/XSC.git \
     && git clone --depth=1 --recurse-submodules https://github.com/objectcomputing/OpenDDS.git \
-    && git clone --depth=1 --recurse-submodules https://github.com/omg-dds/dds-rtps.git \
-    && git clone --depth=1 --recurse-submodules https://github.com/omg-dds/dds-xtypes.git \
-    && git clone --depth=1 --recurse-submodules https://github.com/omg-dds/dds-security.git \
-    && git clone --depth=1 https://github.com/RemedyIT/dancex11.git \
-    && git clone --depth=1 https://github.com/RemedyIT/ciaox11.git
+    && git clone --depth=1 https://github.com/omg-dds/dds-rtps.git \
+    && git clone --depth=1 https://github.com/omg-dds/dds-xtypes.git \
+    && git clone --depth=1 https://github.com/omg-dds/dds-security.git \
+    && git clone --depth=1 https://github.com/RemedyIT/introducing-AXCIOMA.git \
+    && git clone --depth=1 https://github.com/RemedyIT/dancex11_031.git \
+    && git clone --depth=1 https://github.com/RemedyIT/ciaox11_031.git
 
-RUN cd ${DDS_BASE_DIR} \
-    && cd XSC \
-    && export ACE_TAO_ROOT=${DDS_BASE_DIR}/ACE_TAO \
-    && export ACE_ROOT=$ACE_TAO_ROOT/ACE \
-    && export TAO_ROOT=$ACE_TAO_ROOT/TAO \
-    && export CIAO_ROOT=${DDS_BASE_DIR}/CIAO \
-    && export DANCE_ROOT=${DDS_BASE_DIR}/DAnCE \
-    && export MPC_ROOT=${DDS_BASE_DIR}/MPC \
-    && export XSC_ROOT=${DDS_BASE_DIR}/XSC \
-    && export LD_LIBRARY_PATH=$ACE_ROOT/lib:${XSC_ROOT}/XSC/utils:${XSC_ROOT}/lib:/usr/local/lib/:$LD_LIBRARY_PATH \
-    && echo "#include \"ace/config-linux.h\"" >> $ACE_ROOT/ace/config.h \
-    && echo "boost=1\nxsc=1\nxerces3=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
-    && echo "c++11=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
-    && echo "boost=1\nxerces3=1\nxsc=1\n" >> $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
-    && echo "include \$(ACE_ROOT)/include/makeinclude/platform_linux.GNU" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
-    && cat $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
-    && cat $ACE_ROOT/ace/config.h \
-    && cat $ACE_ROOT/include/makeinclude/platform_macros.GNU \
-    && perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 4 XSC.mwc \
-    && mkdir -pv ${DDS_INSTALL_DIR}/XSC \
-    && make -j$(nproc) \
-    && INSTALL_PREFIX=${DDS_INSTALL_DIR}/XSC make install
+# RUN cd ${DDS_BASE_DIR} \
+    # && cd XSC \
+    # && export ACE_TAO_ROOT=${DDS_BASE_DIR}/ACE_TAO \
+    # && export ACE_ROOT=$ACE_TAO_ROOT/ACE \
+    # && export TAO_ROOT=$ACE_TAO_ROOT/TAO \
+    # && export CIAO_ROOT=${DDS_BASE_DIR}/CIAO \
+    # && export DANCE_ROOT=${DDS_BASE_DIR}/DAnCE \
+    # && export MPC_ROOT=${DDS_BASE_DIR}/MPC \
+    # && export XSC_ROOT=${DDS_BASE_DIR}/XSC \
+    # && export LD_LIBRARY_PATH=$ACE_ROOT/lib:${XSC_ROOT}/XSC/utils:${XSC_ROOT}/lib:/usr/local/lib/:$LD_LIBRARY_PATH \
+    # && echo "#include \"ace/config-linux.h\"" >> $ACE_ROOT/ace/config.h \
+    # && echo "boost=1\nxsc=1\nxerces3=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
+    # && echo "c++11=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
+    # && echo "boost=1\nxerces3=1\nxsc=1\n" >> $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
+    # && echo "include \$(ACE_ROOT)/include/makeinclude/platform_linux.GNU" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
+    # && cat $ACE_ROOT/bin/MakeProjectCreator/config/default.features \
+    # && cat $ACE_ROOT/ace/config.h \
+    # && cat $ACE_ROOT/include/makeinclude/platform_macros.GNU \
+    # && perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 4 XSC.mwc \
+    # && mkdir -pv ${DDS_INSTALL_DIR}/XSC \
+    # && make -j$(nproc) \
+    # && INSTALL_PREFIX=${DDS_INSTALL_DIR}/XSC make install
 
-RUN cd ${DDS_BASE_DIR}/OpenDDS \
+RUN cd /tmp \
+    && cd OpenDDS \
     && ./configure --help \
-    && export ACE_TAO_ROOT=${DDS_BASE_DIR}/ACE_TAO \
+    && export ACE_TAO_ROOT=/tmp/ACE_TAO \
     && export ACE_ROOT=$ACE_TAO_ROOT/ACE \
     && export TAO_ROOT=$ACE_TAO_ROOT/TAO \
-    && export CIAO_ROOT=${DDS_BASE_DIR}/CIAO \
-    && export DANCE_ROOT=${DDS_BASE_DIR}/DAnCE \
-    && export MPC_ROOT=${DDS_BASE_DIR}/MPC \
-    && export XSC_ROOT=${DDS_BASE_DIR}/XSC \
-    && export LD_LIBRARY_PATH=${DDS_BASE_DIR}/OpenDDS/lib:${DDS_BASE_DIR}/OpenDDS/build/target/lib:$ACE_ROOT/lib:$LD_LIBRARY_PATH \
+    && export CIAO_ROOT=/tmp/CIAO \
+    && export DANCE_ROOT=/tmp/DAnCE \
+    && export MPC_ROOT=/tmp/MPC \
+    && export XSC_ROOT=/tmp/XSC \
+    && export LD_LIBRARY_PATH=/tmp/OpenDDS/lib:/tmp//OpenDDS/build/target/lib:$ACE_ROOT/lib:$LD_LIBRARY_PATH \
     && export LD_LIBRARY_PATH=$ACE_ROOT/lib:${XSC_ROOT}/XSC/utils:${XSC_ROOT}/lib:/usr/local/lib/:$LD_LIBRARY_PATH \
     && ./configure --prefix=${DDS_INSTALL_DIR} \
             ${OPENDDS_BUILD_OPTIONS} \
             ${OPENDDS_BUILD_CONFIG_OPTIONS} \
-            ${OPENDDS_SECURITY_OPTIONS} \
-            ${OPENDDS_QT_OPTIONS} \
+            # ${OPENDDS_SECURITY_OPTIONS} \
+            # ${OPENDDS_QT_OPTIONS} \
+            --wireshark=/opt/dds/include/wireshark \
             --cmake=/opt/cmake/bin/ \
+#            --wireshark-cmake=/tmp/wireshark \
+#            --wireshark-build=/tmp/wireshark/wireshark-build \
+#            --wireshark-lib=/opt/dds/lib/ \
             --ace=$ACE_ROOT \
             --tao=$TAO_ROOT \
             --mpc=$MPC_ROOT \
@@ -249,7 +257,7 @@ RUN cd ${DDS_BASE_DIR}/OpenDDS \
             --macros="CPPFLAGS+=-Wno-deprecated-declarations -Wno-implicit-fallthroug -Wno-unused-result" \
             ### --configh="#define ACE_FACE_SAFETY_BASE" \
             ### --configh="#include \"ace/config-linux.h\"" \
-    && ./tools/scripts/show_build_config.pl || true \
+    && ./tools/scripts/show_build_config.pl \
     && make -j$(nproc) \
     && make INSTALL_PREFIX=${DDS_INSTALL_DIR} install
 
