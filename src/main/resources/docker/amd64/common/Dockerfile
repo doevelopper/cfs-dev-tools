@@ -71,7 +71,7 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
       yasm nasm xotcl-dev tcl-expect-dev tcl-dev docbook2x dos2unix \
       libpulse-dev libva-dev libxv-dev libelf-dev elfutils libelf1 \
       libavformat-dev libavutil-dev libdlna-dev libavcodec-dev uvcdynctrl \
-      libtsan0-dbg libtsan0 valgrind valgrind-dbg mscgen libgraphviz-dev xdo \
+      libtsan0-dbg libtsan0 valgrind valgrind-dbg mscgen libgraphviz-dev xdot \
       display-dhammapada fortunes lsb-release libpng-dev libghc-graphviz-dev \
       libcrypto++-dev libgcrypt20-dev libpcap-dev libwiretap-dev bittwist tkpng \
       gnutls-bin ntopng pcaputils python-pcapy python-pypcap tcpick tcpspy libgnutls30 \

@@ -116,6 +116,9 @@ RUN cd /tmp \
 	&& mv --verbose gcc-arm-${TOOLCHAIN_VERSION}-x86_64-aarch64-linux-gnu /opt/ \
 	&& rm -vf gcc-arm-${TOOLCHAIN_VERSION}-x86_64-aarch64-linux-gnu.tar.xz
 
+# https://github.com/multiarch/qemu-user-static/releases/
+# https://github.com/multiarch/qemu-user-static/releases/download/v4.1.0-1/qemu-aarch64-static
+
 RUN cmake --version \
    && make --version \
    && gcc --version \

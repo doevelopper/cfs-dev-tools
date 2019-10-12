@@ -25,7 +25,7 @@ ARG BASE_IMAGE=amd64/ubuntu:18.04
 FROM $BASE_IMAGE
 
 ARG PROXY
-ARG MAKEFLAGS
+ARG MAKEFLAGS_OPTIONS
 ARG NOPROXY
 ARG http_proxy=$PROXY
 ARG https_proxy=$PROXY
@@ -39,10 +39,10 @@ ARG PROXY=${PROXY_HOST}:${PROXY_PORT}
 
 
 ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.15}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.3}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.4}
 ARG MVN_VERSION=${MVN_VERSION:-3.6.2}
 ARG GRADLE_VERSION=${GRADLE_VERSION:-5.6.2}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-0.29.1}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-1.0.0}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
 ARG BOOST_VERSION_PATCH=0
@@ -74,7 +74,7 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
         yasm nasm xotcl-dev tcl-expect-dev tcl-dev docbook2x dos2unix \
         libpulse-dev libva-dev libxv-dev libelf-dev elfutils libelf1 \
         libavformat-dev libavutil-dev libdlna-dev libavcodec-dev uvcdynctrl \
-        libtsan0-dbg libtsan0 valgrind valgrind-dbg mscgen libgraphviz-dev xdo \
+        libtsan0-dbg libtsan0 valgrind valgrind-dbg mscgen libgraphviz-dev xdot \
         display-dhammapada fortunes lsb-release lsb-printing libpng-dev libghc-graphviz-dev \
         libcrypto++-dev libgcrypt20-dev libpcap-dev libwiretap-dev bittwist tkpng \
         gnutls-bin ntopng pcaputils python-pcapy python-pypcap tcpick tcpspy libgnutls30 \
@@ -593,7 +593,7 @@ RUN cd /tmp \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
-ENV QT_INSTALL_DIR=/opt/qt
+ENV QT_INSTALL_DIR=/opt/Qt
 ENV QTDIR=${QT_INSTALL_DIR}/${Q_VERSION}/gcc_64
 ENV PATH="${QTDIR}/bin/:${QT_INSTALL_DIR}/Tools/QtCreator/bin:${PATH}:/opt/depot_tools"
 ENV PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
