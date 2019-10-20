@@ -38,7 +38,7 @@ ARG NO_PROXY=$NOPROXY
 ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.15}
 ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.4}
 ARG MVN_VERSION=${MVN_VERSION:-3.6.2}
-ARG GRADLE_VERSION=${GRADLE_VERSION:-5.6.2}
+ARG GRADLE_VERSION=${GRADLE_VERSION:-5.6.3}
 ARG BAZEL_VERSION=${BAZEL_VERSION:-1.0.0}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
@@ -61,13 +61,13 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
       ca-certificates apt-transport-https \
       libtool autotools-dev autopoint autoconf automake make autoproject bison flex \
       build-essential git xz-utils unzip wget curl openssh-server openssh-client \
-      gawk vim vim-nox texinfo emacs25 gtk-doc-tools autogen autogen-doc \
+      gawk vim vim-nox texinfo gtk-doc-tools autogen autogen-doc \
       python-pip python-dev python-wheel cython python-setuptools \
       python3-pip python3-dev python3-wheel cython3 python3-setuptools \
-      ruby ruby-dev libjpeg-dev libudev-dev libmpfr-dev \
+      ruby ruby-dev libjpeg-dev libudev-dev libmpfr-dev libccrtp-dev \
       libglib2.0-dev libglib2.0-bin libglib2.0-0 hxtools\
       xvfb xauth libx11-xcb1 libfontconfig1 libfontconfig1-dev libdbus-1-3 libgl1-mesa-dev \
-      libperl-dev perl perl-base perl-modules apt-utils gettext \
+      libperl-dev perl perl-base perl-modules libgd-perl apt-utils gettext \
       yasm nasm xotcl-dev tcl-expect-dev tcl-dev docbook2x dos2unix \
       libpulse-dev libva-dev libxv-dev libelf-dev elfutils libelf1 \
       libavformat-dev libavutil-dev libdlna-dev libavcodec-dev uvcdynctrl \
