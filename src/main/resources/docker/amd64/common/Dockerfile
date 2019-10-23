@@ -39,7 +39,7 @@ ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.15}
 ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.4}
 ARG MVN_VERSION=${MVN_VERSION:-3.6.2}
 ARG GRADLE_VERSION=${GRADLE_VERSION:-5.6.3}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-1.0.0}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-1.1.0}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
 ARG BOOST_VERSION_PATCH=0
@@ -153,7 +153,7 @@ RUN pip install -q --no-cache-dir conan \
     && pip install --upgrade conan_package_tools \
     && pip install cpplint \
     && pip3 install meson \
-   # && pip install cpplint-junit \
+    && pip3 install cpplint-junit \
     && pip install cppcheck-junit \
     && pip install semver \
     && pip install semver-tool \
@@ -165,6 +165,7 @@ RUN pip install -q --no-cache-dir conan \
     && pip install cpp-coveralls \
     && pip install coverxygen \
     && pip install doxygen-junit \
+    && pip install cornichon \
     && pip install gdb-tools
 
 RUN cmake --version \
@@ -566,7 +567,7 @@ RUN cd /tmp \
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
     && curl -sL https://deb.nodesource.com/setup_12.x | bash - \
-    && apt-get -qq install --assume-yes --no-install-recommends nodejs \
+    #&& apt-get -qq install --assume-yes --no-install-recommends nodejs \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
