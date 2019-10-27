@@ -42,7 +42,7 @@ ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.15}
 ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.4}
 ARG MVN_VERSION=${MVN_VERSION:-3.6.2}
 ARG GRADLE_VERSION=${GRADLE_VERSION:-5.6.2}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-1.0.0}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-1.1.0}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
 ARG BOOST_VERSION_PATCH=0
@@ -159,7 +159,7 @@ RUN pip install -q --no-cache-dir conan \
     && pip install --upgrade conan_package_tools \
     && pip install cpplint \
     && pip3 install meson \
-   # && pip install cpplint-junit \
+    && pip3 install cpplint-junit \
     && pip install cppcheck-junit \
     && pip install semver \
     && pip install semver-tool \
@@ -600,7 +600,7 @@ ENV PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
 
 RUN cd /tmp \
     && Time="$(date +%s)" \
-    && curl -sL https://deb.nodesource.com/setup_12.x | bash - \
+    && curl -sL https://deb.nodesource.com/setup_13.x | bash - \
     && apt-get -qq install --assume-yes --no-install-recommends nodejs \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"

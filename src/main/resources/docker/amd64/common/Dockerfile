@@ -165,7 +165,7 @@ RUN pip install -q --no-cache-dir conan \
     && pip install cpp-coveralls \
     && pip install coverxygen \
     && pip install doxygen-junit \
-    && pip install cornichon \
+    && pip3 install cornichon \
     && pip install gdb-tools
 
 RUN cmake --version \
@@ -566,8 +566,8 @@ RUN cd /tmp \
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -sL https://deb.nodesource.com/setup_12.x | bash - \
-    #&& apt-get -qq install --assume-yes --no-install-recommends nodejs \
+    && curl -sL https://deb.nodesource.com/setup_13.x | bash - \
+    && apt-get -qq install --assume-yes --no-install-recommends nodejs \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
