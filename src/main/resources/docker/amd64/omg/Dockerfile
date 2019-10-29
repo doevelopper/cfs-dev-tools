@@ -246,7 +246,7 @@ RUN cd /tmp \
             --tao=$TAO_ROOT \
             --mpc=$MPC_ROOT \
             --mpcopts="-workers 4" \
-            --features="uses_wchar=1" \
+#            --features="uses_wchar=1" \   void error: cannot convert ‘const char*’ to ‘const ACE_TCHAR* ....
             --features="versioned_namespace=1" \
             --features="xerces3=1" \
             --features="ssl=1" \
@@ -254,7 +254,7 @@ RUN cd /tmp \
             --macros="ssl=1" \
             --macros="c++11=1" \
             --macros="CPPFLAGS+=-Wno-deprecated -Wno-unused-result" \
-            --macros="CPPFLAGS+=-Wno-deprecated-declarations -Wno-implicit-fallthroug -Wno-unused-result" \
+            --macros="CPPFLAGS+=-Wno-deprecated-declarations -Wno-implicit-fallthrough -Wno-unused-result" \
             ### --configh="#define ACE_FACE_SAFETY_BASE" \
             ### --configh="#include \"ace/config-linux.h\"" \
     && ./tools/scripts/show_build_config.pl \

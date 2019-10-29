@@ -66,35 +66,35 @@ RUN cd /tmp \
     && cd /tmp \
     && rm -rf Micro-XRCE-DDS
 
-# RUN cd /tmp \
-    # && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Integration-Service.git \
-    # && cd Integration-Service \
-    # && cmake -E make_directory service-build \
-    # && cmake -E chdir service-build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
+RUN cd /tmp \
+    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Integration-Service.git \
+    && cd Integration-Service \
+    && cmake -E make_directory service-build \
+    && cmake -E chdir service-build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
     #   # -DCMAKE_PREFIX_PATH="/usr/local;/usr/local/xrce-dds" \
-    # && cmake --build service-build --target all --clean-first \
+    && cmake --build service-build --target all --clean-first \
     # && cmake --build service-build --target install \
-    # && cd /tmp \
+    && cd /tmp
     # && rm -rf Integration-Service
 
-# RUN cd /tmp \
-    # && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Discovery-Server.git \
-    # && cd Discovery-Server \
-    # && cmake -E make_directory discovery-build \
-    # && cmake -E chdir discovery-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/disco-svr \
-    # && cmake --build discovery-build --target all --clean-first \
+RUN cd /tmp \
+    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Discovery-Server.git \
+    && cd Discovery-Server \
+    && cmake -E make_directory discovery-build \
+    && cmake -E chdir discovery-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/disco-svr \
+    && cmake --build discovery-build --target all --clean-first \
     # && cmake --build discovery-build --target install \
-    # && cd /tmp \
+    && cd /tmp
     # && rm -rf Discovery-Server
 
-# RUN cd /tmp \
-    # && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Non-Intrusive-DDS-Recorder.git \
-    # && cd Non-Intrusive-DDS-Recorder \
-    # && cmake -E make_directory Recorder-build \
-    # && cmake -E chdir Recorder-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/dds-rec \
-    # && cmake --build discovery-build --target all --clean-first \
+RUN cd /tmp \
+    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Non-Intrusive-DDS-Recorder.git \
+    && cd Non-Intrusive-DDS-Recorder \
+    && cmake -E make_directory Recorder-build \
+    && cmake -E chdir Recorder-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/dds-rec \
+    && cmake --build discovery-build --target all --clean-first \
     # && cmake --build discovery-build --target install \
-    # && cd /tmp \
+    && cd /tmp
     # && rm -rf Non-Intrusive-DDS-Recorder
 
 
