@@ -39,34 +39,20 @@ RUN cd /tmp \
 
 ENV OPENSSL_ROOT_DIR  /usr/local
 
-RUN cd /tmp \
-    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Fast-RTPS.git \
-    && cd Fast-RTPS \
-    && cmake -E make_directory build \
-    && cmake -E chdir build cmake .. -DSECURITY=ON -DPERFORMANCE_TESTS=ON  \
-        -DTHIRDPARTY=ON -DBUILD_JAVA=ON -DPERFORMANCE_TESTS=ON  \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON  \
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON\
-    && cmake --build build --target all --clean-first \
-    && cmake --build build --target install \
-    && cd /tmp \
-    && rm -rf Fast-RTPS
-
+RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
+    && apt-get -qq install --assume-yes --no-install-recommends \
+        libsqlite3-dev \
+    && apt-get clean --assume-yes
 
 RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1 --recurse-submodules --single-branch --branch feature/fastrtps-1.8.1 https://github.com/eProsima/RPC.git \
-    && cd RPC \
-    && cmake -E make_directory rpc-build \
-    && cmake -E chdir rpc-build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DWITH_FASTRTPS=ON -DRPCPROTO=rpcdds \
-    && cmake --build rpc-build --target all --clean-first \
-    && cmake --build rpc-build --target install \
+    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Non-Intrusive-DDS-Recorder.git \
+    && cd Non-Intrusive-DDS-Recorder \
+    && cmake -E make_directory recorder-build \
+    && cmake -E chdir recorder-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/ \
+    && cmake --build recorder-build --target all --clean-first \
+    && cmake --build recorder-build --target install \
     && cd /tmp \
-    && rm -rf RPC \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-
+    && rm -rf Non-Intrusive-DDS-Recorder
 
 ARG ACCOUNT=${ACCOUNT:-developer}
 RUN adduser --system --home /home/${ACCOUNT} --shell /bin/bash \

@@ -97,6 +97,7 @@ RUN cd /tmp \
     && rm -rf  mpc ACE_TAO CIAO DAnCE XSC
 
 # RUN cd /tmp/ \
+#   make install DESTDIR=${DDS_INSTALL_DIR}
     # && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/MPC.git \
     # && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/ACE_TAO.git
     # && cd ACE_TAO \
@@ -232,16 +233,17 @@ RUN cd /tmp \
     && export XSC_ROOT=/tmp/XSC \
     && export LD_LIBRARY_PATH=/tmp/OpenDDS/lib:/tmp//OpenDDS/build/target/lib:$ACE_ROOT/lib:$LD_LIBRARY_PATH \
     && export LD_LIBRARY_PATH=$ACE_ROOT/lib:${XSC_ROOT}/XSC/utils:${XSC_ROOT}/lib:/usr/local/lib/:$LD_LIBRARY_PATH \
+    #&& echo "#include \"ace/config-linux.h\"" >> $ACE_ROOT/ace/config.h \
     && ./configure --prefix=${DDS_INSTALL_DIR} \
             ${OPENDDS_BUILD_OPTIONS} \
             ${OPENDDS_BUILD_CONFIG_OPTIONS} \
-            # ${OPENDDS_SECURITY_OPTIONS} \
-            # ${OPENDDS_QT_OPTIONS} \
-            --wireshark=/opt/dds/include/wireshark \
+            ${OPENDDS_SECURITY_OPTIONS} \
+            ${OPENDDS_QT_OPTIONS} \
+#NOK            --wireshark=/opt/dds/include/wireshark \
             --cmake=/opt/cmake/bin/ \
-#            --wireshark-cmake=/tmp/wireshark \
-#            --wireshark-build=/tmp/wireshark/wireshark-build \
-#            --wireshark-lib=/opt/dds/lib/ \
+# OK            --wireshark-cmake=/tmp/wireshark \
+# OK            --wireshark-build=/tmp/wireshark/wireshark-build \
+# OK            --wireshark-lib=/tmp/wireshark/wireshark-build/run \
             --ace=$ACE_ROOT \
             --tao=$TAO_ROOT \
             --mpc=$MPC_ROOT \
@@ -256,7 +258,6 @@ RUN cd /tmp \
             --macros="CPPFLAGS+=-Wno-deprecated -Wno-unused-result" \
             --macros="CPPFLAGS+=-Wno-deprecated-declarations -Wno-implicit-fallthrough -Wno-unused-result" \
             ### --configh="#define ACE_FACE_SAFETY_BASE" \
-            ### --configh="#include \"ace/config-linux.h\"" \
     && ./tools/scripts/show_build_config.pl \
     && make -j$(nproc) \
     && make INSTALL_PREFIX=${DDS_INSTALL_DIR} install
@@ -309,6 +310,8 @@ RUN cd /tmp \
 #    && make all
 
 
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/dds/lib" \
+    PATH="${PATH}:/opt/dds/bin:"
 
 ARG ACCOUNT=${ACCOUNT:-developer}
 RUN adduser --system --home /home/${ACCOUNT} --shell /bin/bash \

@@ -40,33 +40,14 @@ RUN cd /tmp \
 ENV OPENSSL_ROOT_DIR  /usr/local
 
 RUN cd /tmp \
-    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Fast-RTPS.git \
-    && cd Fast-RTPS \
-    && cmake -E make_directory build \
-    && cmake -E chdir build cmake .. -DSECURITY=ON -DPERFORMANCE_TESTS=ON  \
-        -DTHIRDPARTY=ON -DBUILD_JAVA=ON -DPERFORMANCE_TESTS=ON  \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON  \
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON\
-    && cmake --build build --target all --clean-first \
-    && cmake --build build --target install \
+    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Discovery-Server.git \
+    && cd Discovery-Server \
+    && cmake -E make_directory discovery-build \
+    && cmake -E chdir discovery-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/ \
+    && cmake --build discovery-build --target all --clean-first \
+    && cmake --build discovery-build --target install \
     && cd /tmp \
-    && rm -rf Fast-RTPS
-
-
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1 --recurse-submodules --single-branch --branch feature/fastrtps-1.8.1 https://github.com/eProsima/RPC.git \
-    && cd RPC \
-    && cmake -E make_directory rpc-build \
-    && cmake -E chdir rpc-build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DWITH_FASTRTPS=ON -DRPCPROTO=rpcdds \
-    && cmake --build rpc-build --target all --clean-first \
-    && cmake --build rpc-build --target install \
-    && cd /tmp \
-    && rm -rf RPC \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-
+    && rm -rf Discovery-Server
 
 ARG ACCOUNT=${ACCOUNT:-developer}
 RUN adduser --system --home /home/${ACCOUNT} --shell /bin/bash \

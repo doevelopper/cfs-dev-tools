@@ -91,3 +91,4 @@ RUN adduser --system --home /home/${ACCOUNT} --shell /bin/bash \
 USER $ACCOUNT
 WORKDIR /home/$ACCOUNT
 CMD ["/bin/bash"]
+

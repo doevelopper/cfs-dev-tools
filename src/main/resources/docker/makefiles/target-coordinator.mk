@@ -46,6 +46,22 @@ vortex-opensplice: ## Builddev environment for Vortex OpenSPlice
 fast-rtps: ## Build common dev environment FastRTPS
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima ${GOAL}
 
+.PHONY: dds-recorder
+dds-recorder: ## Tool to record all the DDS traffic in your network
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima/dds-recorder ${GOAL}
+
+.PHONY: integration-service
+integration-service: ## Connect different domains, LANs, and WANs
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima/integration-service ${GOAL}
+
+.PHONY: discovery-server
+discovery-server: ## Discovery mechanism for RTPS
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima/discovery-server ${GOAL}
+
+.PHONY: micro-xrce-dds
+micro-xrce-dds: ## eXtremely Resource Constrained Environments (XRCEs) with an existing DDS network.
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima/micro-xrce-dds ${GOAL}
+
 .PHONY: rti-connext-dds
 rti-connext-dds: ## Build common dev environment for RealTime Innovation DDS
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/rti ${GOAL}
