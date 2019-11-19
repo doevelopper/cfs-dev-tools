@@ -171,6 +171,7 @@ RUN pip install -q --no-cache-dir conan \
     && pip install cpp-coveralls \
     && pip install coverxygen \
     && pip install doxygen-junit \
+    && pip install python-afl \
     && pip install gdb-tools
 
 RUN cmake --version \
