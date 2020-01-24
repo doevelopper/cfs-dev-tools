@@ -43,7 +43,7 @@ docker:test:eprosima-rtps:
     stage: Test docker image
     variables:
         VERSION: 0.0.1
-        MODULE_DIR: eprosima		
+        MODULE_DIR: eprosima
 
 docker:test:rti-connextDDS:
     extends: .test-docker-container
@@ -53,3 +53,4 @@ docker:test:rti-connextDDS:
         GOAL: run
         VERSION: 0.0.1
         MODULE_DIR: rti
+

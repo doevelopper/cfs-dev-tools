@@ -1,4 +1,4 @@
-#       cfs-com/.gitlab-ci.yml
+#       cfs-dev-tools/.gitlab-ci.yml
 #
 #               Copyright (c) 2014-2018 A.H.L
 #
@@ -33,6 +33,8 @@ stages:
     - Build base image
     - Build docker image
     - Test docker image
+    - Build dds servicing tools
+    - Build microservices image
     - Configure build
     - Build sources
     - Build test sources

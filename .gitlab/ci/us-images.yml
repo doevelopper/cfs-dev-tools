@@ -1,0 +1,137 @@
+# %W% %G% %U%
+#        .gitlab/ci/us-images.yml
+#
+#               Copyright (c) 2014-2018 A.H.L
+#
+#        Permission is hereby granted, free of charge, to any person obtaining
+#        a copy of this software and associated documentation files (the
+#        "Software"), to deal in the Software without restriction, including
+#        without limitation the rights to use, copy, modify, merge, publish,
+#        distribute, sublicense, and/or sell copies of the Software, and to
+#        permit persons to whom the Software is furnished to do so, subject to
+#        the following conditions:
+#
+#        The above copyright notice and this permission notice shall be
+#        included in all copies or substantial portions of the Software.
+#
+#        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+#        EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+#        MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+#        NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+#        LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+#        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+#
+
+docker:build:omg-us-apps:
+    image: ${ROOT_IMG_IMAGE}-omg:latest
+    extends: .create-docker-container
+    stage: Build microservices image
+    variables:
+       VERSION: 0.0.1
+       MODULE: opendds-apps
+       MODULE_DIR: omg-apps
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+
+docker:build:common-us-apps:
+    image: ${ROOT_IMG_IMAGE}-common:latest
+    extends: .create-docker-container
+    stage: Build microservices image
+    variables:
+       VERSION: 0.0.1
+       MODULE: linux-apps
+       MODULE_DIR: common-apps
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+
+docker:build:adlinktech-us-apps:
+    image: ${ROOT_IMG_IMAGE}-adlinktech:latest
+    extends: .create-docker-container
+    stage: Build microservices image
+    variables:
+       VERSION: 0.0.1
+       MODULE: vortex-apps
+       MODULE_DIR: adlinktech-apps
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+
+docker:build:eprosima-us-apps:
+    image: ${ROOT_IMG_IMAGE}-eprosima:latest
+    extends: .create-docker-container
+    stage: Build microservices image
+    variables:
+       VERSION: 0.0.1
+       MODULE: fast-rtps-apps
+       MODULE_DIR: eprosima-apps
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+
+docker:build:rti-us-apps:
+    image: ${ROOT_IMG_IMAGE}-rti:latest
+    extends: .create-docker-container
+    stage: Build microservices image
+    variables:
+       VERSION: 0.0.1
+       MODULE: rti-dds-apps
+       MODULE_DIR: rti-apps
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+
+docker:build:rti:services
+    image: ${ROOT_IMG_IMAGE}-${MODULE_DIR}:latest
+    extends: .create-docker-container
+    stage: Build dds servicing tools
+    variables:
+       VERSION: 0.0.1
+       MODULE: rti-tools
+       MODULE_DIR: services
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/rti/${MODULE_DIR}/Dockerfile
+
+docker:build:rti:rpc-over-rti-dds
+    image: ${ROOT_IMG_IMAGE}-${MODULE_DIR}:latest
+    extends: .create-docker-container
+    stage: Build dds servicing tools
+    variables:
+       VERSION: 0.0.1
+       MODULE_DIR: rpc-over-rti-dds
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+
+docker:build:eprosima:rpc-over-rti-dds
+    image: ${ROOT_IMG_IMAGE}-${MODULE_DIR}:latest
+    extends: .create-docker-container
+    stage: Build dds servicing tools
+    variables:
+       VERSION: 0.0.1
+       MODULE_DIR: rpc-over-rti-dds
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+
+docker:build:eprosima:dds-recorder
+    image: ${ROOT_IMG_IMAGE}-${MODULE_DIR}:latest
+    extends: .create-docker-container
+    stage: Build dds servicing tools
+    variables:
+       VERSION: 0.0.1
+       MODULE_DIR: dds-recorder
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+
+docker:build:eprosima:discovery-server
+    image: ${ROOT_IMG_IMAGE}-${MODULE_DIR}:latest
+    extends: .create-docker-container
+    stage: Build dds servicing tools
+    variables:
+       VERSION: 0.0.1
+       MODULE_DIR: discovery-server
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+
+docker:build:eprosima:integration-service
+    image: ${ROOT_IMG_IMAGE}-${MODULE_DIR}:latest
+    extends: .create-docker-container
+    stage: Build dds servicing tools
+    variables:
+       VERSION: 0.0.1
+       MODULE_DIR: integration-service
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
+
+docker:build:eprosima:micro-xrce-dds
+    image: ${ROOT_IMG_IMAGE}-${MODULE_DIR}:latest
+    extends: .create-docker-container
+    stage: Build dds servicing tools
+    variables:
+       VERSION: 0.0.1
+       MODULE_DIR: micro-xrce-dds
+       DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile

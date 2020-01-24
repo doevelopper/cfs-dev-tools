@@ -44,33 +44,42 @@ RUN cd /tmp \
     && cd Fast-RTPS \
     && cmake -E make_directory build \
     && cmake -E chdir build cmake .. -DSECURITY=ON -DPERFORMANCE_TESTS=ON  \
-        -DTHIRDPARTY=ON -DBUILD_JAVA=ON -DPERFORMANCE_TESTS=ON  \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON  \
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON\
+        -DTHIRDPARTY=ON -DBUILD_JAVA=ON -DPERFORMANCE_TESTS=ON \
+        -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON \
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     && cmake --build build --target all --clean-first \
     && cmake --build build --target install \
     && cd /tmp \
     && rm -rf Fast-RTPS
 
-
 RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1 --recurse-submodules --single-branch --branch feature/fastrtps-1.8.1 https://github.com/eProsima/RPC.git \
-    && cd RPC \
-    && cmake -E make_directory rpc-build \
-    && cmake -E chdir rpc-build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DWITH_FASTRTPS=ON -DRPCPROTO=rpcdds \
-    && cmake --build rpc-build --target all --clean-first \
-    && cmake --build rpc-build --target install \
-    && cd /tmp \
-    && rm -rf RPC \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Fast-RTPS-Gen.git \
+    && cd Fast-RTPS-Gen \
+    && gradle assemble \
+    && cp -v share/fastrtps/fastrtpsgen.jar  /opt/cmake/bin/ \
+    && cd /tmp/ \
+    && java -jar /opt/cmake/bin/fastrtpsgen.jar -version \
+    && rm -Rvf Fast-RTPS-Gen \
 
-
+#RUN cd /tmp \
+#    && TimePoint="$(date +%s)" \
+#    && git clone --depth=1 --recurse-submodules --single-branch --branch feature/fastrtps-1.8.1 https://github.com/eProsima/RPC.git \
+#    && cd RPC \
+#    && cmake -E make_directory rpc-build \
+#    && cmake -E chdir rpc-build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DWITH_FASTRTPS=ON -DRPCPROTO=rpcdds \
+#    && cmake --build rpc-build --target all --clean-first \
+#    && cmake --build rpc-build --target install \
+#    && cd /tmp \
+#    && rm -rf RPC \
+#    && TimePoint="$(($(date +%s)-TimePoint))" \
+#    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 ARG ACCOUNT=${ACCOUNT:-developer}
-RUN adduser --system --home /home/${ACCOUNT} --shell /bin/bash \
-        --gecos GECOS --group --disabled-password --quiet ${ACCOUNT}
+RUN addgroup --quiet --force-badname --system dev
+RUN adduser --quiet --system --ingroup dev --disabled-login \
+    --disabled-password --home /home/${ACCOUNT} --force-badname --gecos "DDS apps runner" \
+    --shell /bin/bash ${ACCOUNT}
+
 USER $ACCOUNT
 WORKDIR /home/$ACCOUNT
 CMD ["/bin/bash"]

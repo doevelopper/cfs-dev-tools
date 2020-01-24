@@ -36,10 +36,11 @@ ARG HTTP_PROXY=$PROXY
 ARG HTTPS_PROXY=$PROXY
 ARG NO_PROXY=$NOPROXY
 ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.16}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.0-rc4}
-ARG MVN_VERSION=${MVN_VERSION:-3.6.2}
-ARG GRADLE_VERSION=${GRADLE_VERSION:-6.1.0}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-1.1.0}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.3}
+ARG MVN_VERSION=${MVN_VERSION:-3.6.3}
+ARG GRADLE_VERSION=${GRADLE_VERSION:-6.1}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-2.0.0}
+ARG GST_VERSION=${GST_VERSION:-1.16.1}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
 ARG BOOST_VERSION_PATCH=0
@@ -47,16 +48,18 @@ ARG BOOST_VERSION=${BOOST_VERSION_MAJ}.${BOOST_VERSION_MIN}.${BOOST_VERSION_PATC
 ARG BOOST_RELEASE=${BOOST_VERSION_MAJ}_${BOOST_VERSION_MIN}_${BOOST_VERSION_PATCH}
 ARG APR_VERSION=1.7.0
 ARG APU_VERSION=1.6.1
-ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.13}
-ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.2}
+ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.14}
+ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.0}
 ARG QT_SHA_256=0cd82c80287a783bd5db1339b6184803d57517c9450ffe16f505254853f0a41f
 ARG T_MD5=c839aed9d551bdc8411a0a33e5ae46f3
+ARG GDB_VERSION=${GDB_VERSION:-8.3.1}
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 
-RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
+RUN Time="$(date +%s)" \
+    && apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
     && apt-get -qq install --assume-yes --no-install-recommends \
       ca-certificates apt-transport-https \
       libtool autotools-dev autopoint autoconf automake make autoproject bison flex \
@@ -79,12 +82,14 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
       libogg-dev liboggz2-dev python-ogg libisocodes-dev gir1.2-isocodes-1.2 libpng++-dev \
       libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
       iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof hxtools \
-      ccache gcovr lcov node-lcov-parse tmux libsqlite3-dev \
+      ccache gcovr lcov node-lcov-parse tmux libsqlite3-dev afl-cov \
     && apt-get clean --assume-yes \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
     && rm -rvf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/* \
-    && rm -rf /usr/share/man/
+    && rm -rf /usr/share/man/ \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
 # libavutil-dev libavformat-dev libavcodec-dev libswscale-dev libavdevice-dev
 ##setting up the apt so it will run through the proxy
@@ -144,12 +149,17 @@ ENV PATH $PATH:/opt/apache-maven/bin/:/opt/jdk1.8.0_212/bin:/opt/jdk1.8.0_212/jr
 ENV PATH $PATH:/opt/gradle/gradle-${GRADLE_VERSION}/bin
 
 RUN cd /tmp \
+    && Time="$(date +%s)" \
     && curl -L -O -k https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh \
     && chmod +x bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh  \
     && ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh  \
-    && rm -f ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
+    && rm -f ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
-RUN pip install -q --no-cache-dir conan \
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && pip install -q --no-cache-dir conan \
     && pip install --upgrade conan_package_tools \
     && pip install cpplint \
     && pip3 install meson \
@@ -167,7 +177,11 @@ RUN pip install -q --no-cache-dir conan \
     && pip install doxygen-junit \
     && pip3 install cornichon \
     && pip install python-afl \
-    && pip install gdb-tools
+    && pip install sphinx_rtd_theme \
+    && pip install breathe \
+    && pip install gdb-tools \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
 RUN cmake --version \
     && make --version \
@@ -182,14 +196,14 @@ RUN echo -e '\033[36;1m ******* Differnets QA tools installation ******** \033[0
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -L -O -k http://ftp.gnu.org/gnu/gdb/gdb-8.3.tar.gz \
-    && tar -xzf gdb-8.3.tar.gz \
-    && cd gdb-8.3 \
+    && curl -L -O -k http://ftp.gnu.org/gnu/gdb/gdb-${GDB_VERSION}.tar.gz \
+    && tar -xzf gdb-${GDB_VERSION}.tar.gz \
+    && cd gdb-${GDB_VERSION} \
     && ./configure --prefix=/usr/local \
     && make -j$(nproc) \
     && make install \
     && cd /tmp \
-    && rm -rf gdb-8.3.tar.gz gdb-8.3 \
+    && rm -rf gdb-${GDB_VERSION}.tar.gz gdb-${GDB_VERSION} \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
@@ -312,14 +326,13 @@ RUN cd /tmp \
     && cd boost_${BOOST_RELEASE} \
     && ./bootstrap.sh --prefix=/usr/local --with-python=python3 \
     && ./b2 --help \
-    && ./b2 link=shared threading=multi variant=release address-model=64 > /dev/null 2>&1 \
+    && ./b2 link=shared threading=multi variant=release address-model=64 --build-dir=/tmp/boost-build > /dev/null 2>&1 \
     && ./b2 install --prefix=/usr/local > /dev/null 2>&1 \
     && cd /tmp \
-    && rm -rf boost_${BOOST_RELEASE} boost_${BOOST_RELEASE}.tar.gz \
+    && rm -rf boost_${BOOST_RELEASE} boost_${BOOST_RELEASE}.tar.gz boost-build \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-#sml requires GCC >= 6.0.0
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
     && git clone --depth=1 https://github.com/boost-experimental/sml.git \
@@ -715,6 +728,34 @@ RUN cd /tmp \
     # && rm -Rf pharos \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && git clone --depth=1 https://github.com/curl/curl.git \
+    && cd curl \
+    && cmake -E make_directory curl-build \
+    && cmake -E chdir curl-build cmake -DCMAKE_BUILD_TYPE=Release \
+       -DCMAKE_INSTALL_PREFIX=/usr/local .. \
+    && cmake --build curl-build --target all --clean-first \
+    && cmake --build curl-build --target install \
+    && cd /tmp/ \
+    && rm -Rf curl curl-build \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
+
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && git clone --depth=1 https://github.com/Tencent/rapidjson.git \
+    && cd rapidjson \
+    && cmake -E make_directory rapidjson-build \
+    && cmake -E chdir rapidjson-build cmake -DCMAKE_BUILD_TYPE=Release \
+       -DCMAKE_INSTALL_PREFIX=/usr/local .. \
+    && cmake --build rapidjson-build --target all --clean-first \
+    && cmake --build rapidjson-build --target install \
+    && cd /tmp/ \
+    && rm -Rf rapidjson rapidjson-build  \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
 ####  installs unwante dependencies like boost1.67 ....
 # RUN apt-get -qq install --assume-yes --no-install-recommends \

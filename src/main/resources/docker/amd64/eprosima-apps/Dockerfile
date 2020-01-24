@@ -1,4 +1,4 @@
-#         cfs-com/.gitlab/ci/base.yml
+#        cfs-com/src/main/resources/docker/amd64/omg/Dockerfile
 #
 #               Copyright (c) 2014-2018 A.H.L
 #
@@ -19,34 +19,26 @@
 #        NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 #        LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 #        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-#        WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
 
-docker:build:dds-base:
-    stage: Build base image
-    extends:
-        - .create-docker-container
-    variables:
-        GOAL: build
-        PLATFORM: ""
-        BUMP_VERSION: "0.0.1"
-        MODULE: "dds-base"
-        MODULE_DIR: common
-        DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
-    # only:
-        # changes: [ subdir/**/*, Dockerfile, requirement.txt
+ARG DDS_DEV_IMAGE=docker.io/doevelopper/cfs-dev-tools-eprosima:0.0.1
+FROM $DDS_DEV_IMAGE  as appsbuilder
 
-docker:build:rti-dds-base:
-    stage: Build base image
-    extends:
-        - .create-docker-container
-    variables:
-        GOAL: build
-        PLATFORM: "RTI"
-        BUMP_VERSION: "5.3.3"
-        MODULE: "rti-connext-dds"
-        MODULE_DIR: rti
-        DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
-    # only:
-    #    variables:
-    #        - $BASE == "yes"
+COPY --from=appsbuilder /usr/local/lib/lib*.so.* /usr/local/lib/
+COPY --from=appsbuilder /opt/jdk1.8.0_212/ /opt/jdk1.8.0_212/
+COPY --from=appsbuilder /opt/Qt/5.13.2/gcc_64/lib/libQt*.so /usr/local/lib/
+
+ARG ACCOUNT=${ACCOUNT:-developer}
+RUN addgroup --quiet --force-badname --system dev
+RUN adduser --quiet --system --ingroup dev --disabled-login \
+        --disabled-password --home /home/${ACCOUNT} --force-badname --gecos "Dev user" \
+        --shell /bin/bash ${ACCOUNT}
+
+#RUN adduser --force-badname --system --home /home/${ACCOUNT} --shell /bin/bash \
+#        --gecos GECOS --group --disabled-password --quiet ${ACCOUNT}
+#
+
+USER $ACCOUNT
+WORKDIR /home/$ACCOUNT
+CMD ["/bin/bash"]
 

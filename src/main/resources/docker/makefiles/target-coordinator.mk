@@ -30,41 +30,73 @@ COMMON_IMG_BUILD_OPTS += CWD="${CWD}"
 dind: ## Docker + docker-compose for custom dind
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/dind/ ${GOAL}
 
-.PHONY: dds-base
-dds-base: ## Build common dev environment for OpenSPlice,FastRTPS,OpenDDS
+.PHONY: common-base
+common-base: ## Build common dev environment for OpenSPlice,FastRTPS,OpenDDS
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/common/ ${GOAL}
+
+.PHONY: common-apps
+common-apps: ## Build common deployment images
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/common-apps/ ${GOAL}
 
 .PHONY: omg-opendds
 omg-opendds: ## Build dev environment for OpenDDS
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/omg ${GOAL}
 
+.PHONY: omg-apps
+omg-apps: ## Container running applications relying on OMG DDS implementation
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/omg-apps ${GOAL}
+
 .PHONY: vortex-opensplice
 vortex-opensplice: ## Builddev environment for Vortex OpenSPlice
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/adlinktech ${GOAL}
 
-.PHONY: fast-rtps
-fast-rtps: ## Build common dev environment FastRTPS
+.PHONY: vortex-apps
+vortex-apps: ## Container running applications relying on AdlinkTech DDS implementation
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/adlinktech-apps ${GOAL}
+
+.PHONY: eprosima
+eprosima: ## Build common dev environment FastRTPS
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima ${GOAL}
 
-.PHONY: dds-recorder
-dds-recorder: ## Tool to record all the DDS traffic in your network
+.PHONY: eprosima-apps
+eprosima-apps: ## Container running applications relying on eProsima DDS implementation
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima-apps ${GOAL}
+
+.PHONY: eprosima-recorder
+eprosima-recorder: ## Tool to record all the DDS traffic in your network
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima/dds-recorder ${GOAL}
 
-.PHONY: integration-service
-integration-service: ## Connect different domains, LANs, and WANs
+.PHONY: eprosima-integration-service
+eprosima-integration-service: ## Connect different domains, LANs, and WANs
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima/integration-service ${GOAL}
 
-.PHONY: discovery-server
-discovery-server: ## Discovery mechanism for RTPS
+.PHONY: eprosima-discovery-server
+eprosima-discovery-server: ## Discovery mechanism for RTPS
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima/discovery-server ${GOAL}
 
-.PHONY: micro-xrce-dds
-micro-xrce-dds: ## eXtremely Resource Constrained Environments (XRCEs) with an existing DDS network.
+.PHONY: eprosima-micro-xrce-dds
+eprosima-micro-xrce-dds: ## eXtremely Resource Constrained Environments (XRCEs) with an existing DDS network.
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima/micro-xrce-dds ${GOAL}
+
+.PHONY: eprosima-rpc-over-dds
+eprosima-rpc-over-dds: ## RPC communication  over an OMG DDS implementation Fast-RTPS
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/eprosima/rpc-over-dds ${GOAL}
 
 .PHONY: rti-connext-dds
 rti-connext-dds: ## Build common dev environment for RealTime Innovation DDS
 	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/rti ${GOAL}
+
+.PHONY: rti-tools
+rti-tools: ## RTI runtime binaries and utils rtiddsping,rtiddsspy,monitor,cloud-discovery...
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/rti/services ${GOAL}
+
+.PHONY: rti-rpc-over-dds
+rti-rpc-over-dds: ## RPC communication  over an OMG DDS implementation RTI DDS
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/rti/rpc-over-rti-dds ${GOAL}
+
+.PHONY: rti-apps
+rti-apps: ## Container running applications relying on RTI DDS implementation
+	$(Q)$(MAKE) $(COMMON_IMG_BUILD_OPTS) -C src/main/resources/docker/$(ARCH)/rti-apps ${GOAL}
 
 .PHONY: check
 check: ## Check binaries prerequisities.

@@ -21,7 +21,7 @@
 #        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #
 
-ARG DDS_DEV_IMAGE=docker.io/doevelopper/cfs-dev-tools-common:0.0.1
+ARG DDS_DEV_IMAGE=registry.gear.ge.com/100034251/dev-tools-common:0.0.1
 FROM $DDS_DEV_IMAGE
 
 USER root
@@ -32,35 +32,37 @@ RUN cd /tmp \
     && cmake -E chdir build cmake .. -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_CXX_FLAGS="-Wall -Wextra -pedantic" -DCMAKE_INSTALL_PREFIX=/usr/local \
         -DBUILD_SHARED_LIBS=ON \
-    && cmake --build build --target all --clean-first --parallel \
+    && cmake --build build --target all --clean-first \
     && cmake --build build --target install \
     && cd /tmp \
     && rm -rf memory
 
 ENV OPENSSL_ROOT_DIR  /usr/local
 
-# Clone build and install Micro XRCE-DDS Agent and Client
-# https://micro-xrce-dds.readthedocs.io/en/latest/installation.html
-RUN cd /tmp \
-    && git clone https://github.com/eProsima/Micro-XRCE-DDS.git \
-    && cd Micro-XRCE-DDS \
-    && cmake -E make_directory xrce-build \
-    && cmake -E chdir xrce-build cmake .. -DTHIRDPARTY=ON -DVERBOSE=ON -DCMAKE_INSTALL_PREFIX=/usr/local/ \
-    && cmake --build xrce-build --target all --clean-first \
-    && cmake --build xrce-build --target install \
-    && cd /tmp \
-    && rm -rf Micro-XRCE-DDS
+RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
+    && apt-get -qq install --assume-yes --no-install-recommends \
+        libsqlite3-dev \
+    && apt-get clean --assume-yes
 
 RUN cd /tmp \
-    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Micro-XRCE-DDS-Gen.git \
-    && cd Micro-XRCE-DDS-Gen \
-    && gradle build \
-    && cp -v share/microxrcedds/microxrceddsgen.jar /opt/cmake/bin/ \
-    && /tmp
+    && git clone --depth=1 --recurse-submodules --single-branch --branch feature/fastrtps-1.8.1 https://github.com/eProsima/RPC.git \
+    && cd rpc \
+    && cmake -E make_directory recorder-build \
+    && cmake -E chdir recorder-build cmake .. -DTHIRDPARTY=ON -DCMAKE_INSTALL_PREFIX=/usr/local/ \
+    && cmake --build recorder-build --target all --clean-first \
+    && cmake --build recorder-build --target install \
+    && cd /tmp \
+    && rm -rf rpc
 
 ARG ACCOUNT=${ACCOUNT:-developer}
-RUN adduser --system --home /home/${ACCOUNT} --shell /bin/bash \
-        --gecos GECOS --group --disabled-password --quiet ${ACCOUNT}
+RUN addgroup --quiet --force-badname --system dev
+RUN adduser --quiet --system --ingroup dev --disabled-login \
+        --disabled-password --home /home/${ACCOUNT} --force-badname --gecos "Dev user" \
+        --shell /bin/bash ${ACCOUNT}
+
+#RUN adduser --system --home /home/${ACCOUNT} --shell /bin/bash \
+#        --gecos GECOS --group --disabled-password --quiet ${ACCOUNT}
+
 USER $ACCOUNT
 WORKDIR /home/$ACCOUNT
 CMD ["/bin/bash"]

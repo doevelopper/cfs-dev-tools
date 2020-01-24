@@ -43,8 +43,8 @@ ifneq ($(findstring s,$(filter-out --%,$(MAKEFLAGS))),)
 endif
 
 ifeq (0,${MAKELEVEL})
-	whoami    := $(shell whoami)
-	host-type := $(shell arch)
+	whoami                 := $(shell whoami)
+	host-type              := $(shell arch)
 	# MAKE := ${MAKE} host-type=${host-type} whoami=${whoami}
 endif
 
@@ -181,3 +181,4 @@ export RND_NS       = $(shell cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 
 #         export WHITE              = $(shell tput setaf 7)
 #     endif
 # endif
+

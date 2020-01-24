@@ -1,4 +1,4 @@
-#        cfs-com/src/main/resources/docker/dind/Dockerfile
+#        cfs-dev-tools/src/main/resources/docker/dind/Dockerfile
 #
 #               Copyright (c) 2014-2018 A.H.L
 #
@@ -40,7 +40,7 @@ RUN apt-get update \
     && apt-get clean --assume-yes \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -k -L https://github.com/docker/compose/releases/download/1.25.0-rc2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
+RUN curl -k -L https://github.com/docker/compose/releases/download/1.25.3/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/docker-compose \
     && docker-compose --version
 
@@ -57,8 +57,15 @@ RUN \
 # # Install helm
 # Note: Latest version of helm may be found at:
 # https://github.com/kubernetes/helm/releases
-ENV HELM_VERSION="v3.0.0-beta.5"
-RUN wget -q https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
+ENV HELM_VERSION="v3.0.2"
+RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
 
+RUN docker version || true \
+    && docker-compose version \
+    && helm version --client \
+    && helm help \
+    && kubectl version || true
+
 CMD ["/bin/bash"]
+

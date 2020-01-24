@@ -28,6 +28,7 @@ docker:test:dds-base:
         GOAL: run
         MODULE: "dds-base"
         MODULE_DIR: common
+        MODULE_VERSION: "3.13.3"
     image: ${ROOT_IMG_IMAGE}-${MODULE_DIR}:latest
 
 docker:test:rti-dds-base:
@@ -38,4 +39,5 @@ docker:test:rti-dds-base:
         VERSION: 5.3.3
         MODULE: "rti-connext-dds"
         MODULE_DIR: rti
+        MODULE_VERSION: "6.0.0"
     image: ${ROOT_IMG_IMAGE}-${MODULE_DIR}:latest

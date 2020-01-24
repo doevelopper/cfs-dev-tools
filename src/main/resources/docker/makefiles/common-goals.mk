@@ -72,12 +72,16 @@ endif
 dtr-login: ## loging to DTR
 ifneq ($(CI_RUNNER_TAGS),)
 	echo "${DTR_PASSWORD}" | docker login -u "${DTR_NAMESPACE}" --password-stdin ${DOCKER_TRUSTED_REGISTRY}
+else
+	$(info ************ Not for DTR ************)
 endif
 
 .PHONY: dtr-logout
 dtr-logout: ## Logout from DTR
 ifneq ($(CI_RUNNER_TAGS),)
 	$(Q)$(DOCKER) logout ${DOCKER_TRUSTED_REGISTRY} || true
+else
+	$(info ************ Not for DTR ************)
 endif
 
 .PHONY: build
@@ -85,9 +89,12 @@ build: build-image dtr-login push dtr-logout ## Build and deploy Docker images b
 
 .PHONY: build-image
 build-image:
-	$(Q)echo "$(SH_CYAN) Build of $(BUILDER_FQIN) from $(BASE_IMAGE) $(SH_DEFAULT)"
-	$(Q)$(DOCKER) build $(DOCKER_LABEL) $(BUILD_ARGS) --tag  $(BUILDER_FQIN):$(SEM_VERSION) --file ./Dockerfile . 2>&1 | tee $(GIT_ROOTDIR)/$(shell basename $(CURDIR))_build_output.log
-	$(Q)echo "Build of $(BUILDER_FQIN):$(SEM_VERSION) finished."
+	$(Q) echo "$(SH_CYAN) Build of $(BUILDER_FQIN) from $(BASE_IMAGE) $(SH_DEFAULT)"
+	$(Q) $(DOCKER) build $(DOCKER_LABEL) $(BUILD_ARGS) --tag  $(BUILDER_FQIN):$(SEM_VERSION) --file ./Dockerfile . 2>&1 | tee $(GIT_ROOTDIR)/$(shell basename $(CURDIR))_build_output.log
+	$(Q) echo
+	$(Q) echo "$(SH_BLUE) Apply tag [$(SEM_VERSION)|latest] on $(BUILDER_FQIN)  $(SH_DEFAULT)"
+	$(Q) $(DOCKER) tag $(BUILDER_FQIN):$(SEM_VERSION) $(BUILDER_FQIN):latest
+	$(Q) echo "Build of $(BUILDER_FQIN):$(SEM_VERSION) finished."
 
 .PHONY: push
  push: push-image ## Push docker image to DTR.
@@ -95,14 +102,13 @@ build-image:
 .PHONY: push-image
 push-image:
 ifneq ($(CI_RUNNER_TAGS),)
-	$(Q)echo "$(SH_BLUE) Apply tag [$(SEM_VERSION)|latest] on $(BUILDER_FQIN)  $(SH_DEFAULT)"
-	$(Q)$(DOCKER) tag $(BUILDER_FQIN):$(SEM_VERSION) $(BUILDER_FQIN):latest
-	$(Q)echo
-	$(Q)echo "$(SH_BLUE) Pushing $(BUILDER_FQIN):[$(SEM_VERSION)|latest] to $(DOCKER_TRUSTED_REGISTRY)$(SH_DEFAULT)"
-	$(Q)$(DOCKER) push $(BUILDER_FQIN):$(SEM_VERSION)
-	$(Q)$(DOCKER) push $(BUILDER_FQIN):latest
-	# $(Q)echo "$(SEM_VERSION)" > $(VERSIONFILE)
-	$(Q)echo "$(SH_GREEN) Images $(BUILDER_FQIN):[$(SEM_VERSION)|latest] pushed to DTR$(SH_DEFAULT)"
+	$(Q) echo "$(SH_BLUE) Pushing $(BUILDER_FQIN):[$(SEM_VERSION)|latest] to $(DOCKER_TRUSTED_REGISTRY)$(SH_DEFAULT)"
+	$(Q) $(DOCKER) push $(BUILDER_FQIN):$(SEM_VERSION)
+	$(Q) $(DOCKER) push $(BUILDER_FQIN):latest
+#   $(Q) echo "$(SEM_VERSION)" > $(VERSIONFILE)
+	$(Q) echo "$(SH_GREEN) Images $(BUILDER_FQIN):[$(SEM_VERSION)|latest] pushed to DTR$(SH_DEFAULT)"
+else
+	$(info ************ $(BUILDER_FQIN):$(SEM_VERSION)  not pushed to DTR ************)
 endif
 
 .PHONY: run

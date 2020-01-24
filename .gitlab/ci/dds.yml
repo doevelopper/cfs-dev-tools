@@ -26,7 +26,7 @@ docker:build:omg-opendds:
     stage: Build docker image
     variables:
         GOAL: build
-        BUMP_VERSION: 3.13.3
+        BUMP_VERSION: "3.13.3"
         MODULE: "omg-opendds"
         MODULE_DIR: omg
         DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
@@ -36,7 +36,7 @@ docker:build:adlinktech-vortex:
     stage: Build docker image
     variables:
         GOAL: build
-        BUMP_VERSION: 6.9.0
+        BUMP_VERSION: "6.9.0"
         MODULE: "vortex-opensplice"
         MODULE_DIR: adlinktech
         DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
@@ -46,7 +46,7 @@ docker:build:eprosima-rtps:
     stage: Build docker image
     variables:
         GOAL: build
-        BUMP_VERSION: 1.9.0
+        BUMP_VERSION: "1.9.3"
         MODULE: "fast-rtps"
         MODULE_DIR: eprosima
         DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile

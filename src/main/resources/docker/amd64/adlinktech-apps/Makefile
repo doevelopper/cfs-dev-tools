@@ -1,6 +1,6 @@
 .DEFAULT_GOAL:=help
 
-#       cfs-com/src/main/resources/docker/dind/Makefile
+#       cfs-dev-tools/src/main/resources/docker/amd64/adlinktech-apps/Makefile
 #
 #               Copyright (c) 2014-2018 A.H.L
 #
@@ -21,16 +21,16 @@
 #        NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 #        LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 #        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-#
+# 
 
 CONTAINER_IMAGE      = ${APP_BASE_IMAGE_NAME}-$(shell basename $(CURDIR))
 
-DOCKER_LABEL        := --label org.label-schema.title="Fast RTPS"
-DOCKER_LABEL        += --label org.label-schema.description="eprosima Fast RTPS is a C++ implementation of the RTPS"
+DOCKER_LABEL        := --label org.label-schema.title="Vortex OpenSplice"
+DOCKER_LABEL        += --label org.label-schema.description="Complete enviroment for building applications relying on OpenSplice"
 DOCKER_LABEL        += --label org.label-schema.name=$(CONTAINER_IMAGE)
 DOCKER_LABEL        += --label org.label-schema.schema-version="$(CONTAINER_IMAGE):$(VERSION)"
 DOCKER_LABEL        += --label org.label-schema.version=$(VERSION)
-DOCKER_LABEL        += --label org.label-schema.usage="Image used by gitlab-ci to build and run c++/FastRTPS dds app"
+DOCKER_LABEL        += --label org.label-schema.usage="Image used by gitlab-ci to build and run c++ app"
 DOCKER_LABEL        += --label org.label-schema.docker.cmd="make $(shell basename $(CURDIR)) run"
 DOCKER_LABEL        += --label org.label-schema.docker.dockerfile=$(DOCKER_FILE)
 
@@ -41,4 +41,3 @@ BUILDER_FQIN        := $(CONTAINER_IMAGE)
 RUNTIME_FQIN        := $(IMAGE):$(VERSION)
 
 include $(CWD)/src/main/resources/docker/makefiles/common-goals.mk
-

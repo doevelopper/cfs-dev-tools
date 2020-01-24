@@ -53,20 +53,19 @@ ARG DDS_BUILD_DISSECT_OPTIONS="--qt --wireshark=/usr/local/"
 ARG DDS_BASE_DIR=/opt/dds
 ARG DDS_INSTALL_DIR=/opt/dds
 
-RUN cd /tmp \
-    && GIT_SSL_NO_VERIFY=1 git clone --depth=1 --recurse-submodules https://github.com/wireshark/wireshark.git \
-    && cd wireshark \
-    && cmake -E make_directory wireshark-build \
-    && export CMAKE_PREFIX_PATH=${QTDIR}:${CMAKE_PREFIX_PATH} \
-    && cmake -E chdir wireshark-build cmake .. \
-        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${DDS_INSTALL_DIR} \
-#        -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/wireshark \
-        -DDUMPCAP_INSTALL_OPTION=suid \
-    && cmake --build wireshark-build --target all \
-    && cmake --build wireshark-build --target install \
-    && cd /tmp
-#    && rm -Rf wireshark
-
+#RUN cd /tmp \
+#    && GIT_SSL_NO_VERIFY=1 git clone --depth=1 --recurse-submodules https://github.com/wireshark/wireshark.git \
+#    && cd wireshark \
+#    && cmake -E make_directory wireshark-build \
+#    && export CMAKE_PREFIX_PATH=${QTDIR}:${CMAKE_PREFIX_PATH} \
+#    && cmake -E chdir wireshark-build cmake .. \
+#        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${DDS_INSTALL_DIR} \
+##        -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/wireshark \
+#        -DDUMPCAP_INSTALL_OPTION=suid \
+#    && cmake --build wireshark-build --target all \
+#    && cmake --build wireshark-build --target install \
+#    && cd /tmp
+##    && rm -Rf wireshark
 
 RUN cd /tmp \
     && git clone --depth=1 --recurse-submodules https://github.com/DOCGroup/MPC.git \
@@ -92,9 +91,9 @@ RUN cd /tmp \
     && cat $ACE_ROOT/include/makeinclude/platform_macros.GNU \
     && perl $ACE_ROOT/bin/mwc.pl -type gnuace -workers 2 XSC.mwc \
     && make -j$(nproc) \
-    && make install \
+    && make INSTALL_PREFIX=${DDS_INSTALL_DIR}/xsc install \
     && cd /tmp \
-    && rm -rf  mpc ACE_TAO CIAO DAnCE XSC
+    && rm -rf  MPC mpc ACE_TAO CIAO DAnCE XSC
 
 # RUN cd /tmp/ \
 #   make install DESTDIR=${DDS_INSTALL_DIR}
@@ -234,7 +233,7 @@ RUN cd /tmp \
     && export LD_LIBRARY_PATH=/tmp/OpenDDS/lib:/tmp//OpenDDS/build/target/lib:$ACE_ROOT/lib:$LD_LIBRARY_PATH \
     && export LD_LIBRARY_PATH=$ACE_ROOT/lib:${XSC_ROOT}/XSC/utils:${XSC_ROOT}/lib:/usr/local/lib/:$LD_LIBRARY_PATH \
     #&& echo "#include \"ace/config-linux.h\"" >> $ACE_ROOT/ace/config.h \
-    && ./configure --prefix=${DDS_INSTALL_DIR} \
+    && ./configure --prefix=${DDS_INSTALL_DIR}/opendds \
             ${OPENDDS_BUILD_OPTIONS} \
             ${OPENDDS_BUILD_CONFIG_OPTIONS} \
             ${OPENDDS_SECURITY_OPTIONS} \
@@ -260,7 +259,7 @@ RUN cd /tmp \
             ### --configh="#define ACE_FACE_SAFETY_BASE" \
     && ./tools/scripts/show_build_config.pl \
     && make -j$(nproc) \
-    && make INSTALL_PREFIX=${DDS_INSTALL_DIR} install
+    && make INSTALL_PREFIX=${DDS_INSTALL_DIR}/opendds install
 
     # && export LD_LIBRARY_PATH=:${LD_LIBRARY_PATH}:${pwd}/build/target/ACE_TAO/ACE/lib:${ACE_ROOT}/lib:${pwd}/build/target/lib:${pwd}/lib \
     # && echo -e "#include \"ace/config-linux.h\"" >> $ACE_ROOT/ace/config.h \
@@ -273,14 +272,16 @@ RUN cd /tmp \
     # && echo -e "c++11=1\n" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
     # && echo -e "include \$(ACE_ROOT)/include/makeinclude/platform_linux.GNU" >> $ACE_ROOT/include/makeinclude/platform_macros.GNU \
 
-# RUN cd ${DDS_BASE_DIR} \
-    # && git clone --depth=1 --recursive https://github.com/objectcomputing/mFAST.git \
-    # && cd mFAST \
-    # && cmake -E make_directory build \
-    # && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=${DDS_INSTALL_DIR}  \
-    # && cmake --build build --target all --clean-first > /dev/null 2>&1 \
-    # && cmake --build build --target install > /dev/null 2>&1 \
-    # && cd ${DDS_BASE_DIR}
+## latest boot not supported
+#RUN cd /tmp \
+#    && git clone --depth=1 --recursive https://github.com/objectcomputing/mFAST.git \
+#    && cd mFAST \
+#    && cmake -E make_directory mfast-build \
+#    && cmake -E chdir mfast-build cmake .. -DCMAKE_INSTALL_PREFIX=${DDS_INSTALL_DIR}/mfast  \
+#    && cmake --build mfast-build --target all --clean-first \
+#    && cmake --build build --target install \
+#    && cd /tmp \
+#    && rm -Rvf mFast
 
 #######ENV export CMAKE_INSTALL_PREFIX=/usr/
 # ENV ACE_TAO_ROOT=${DDS_BASE_DIR}/ACE_TAO \
@@ -310,8 +311,8 @@ RUN cd /tmp \
 #    && make all
 
 
-ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/dds/lib" \
-    PATH="${PATH}:/opt/dds/bin:"
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/dds/opendds/lib" \
+    PATH="${PATH}:/opt/dds/opendds/bin:"
 
 ARG ACCOUNT=${ACCOUNT:-developer}
 RUN adduser --system --home /home/${ACCOUNT} --shell /bin/bash \
@@ -320,3 +321,4 @@ USER $ACCOUNT
 WORKDIR /home/$ACCOUNT
 
 CMD ["/bin/bash"]
+
