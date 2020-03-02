@@ -40,7 +40,7 @@ RUN apt-get update \
     && apt-get clean --assume-yes \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -k -L https://github.com/docker/compose/releases/download/1.25.3/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
+RUN curl -k -L https://github.com/docker/compose/releases/download/1.25.4/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/docker-compose \
     && docker-compose --version
 
@@ -57,7 +57,7 @@ RUN \
 # # Install helm
 # Note: Latest version of helm may be found at:
 # https://github.com/kubernetes/helm/releases
-ENV HELM_VERSION="v3.0.2"
+ENV HELM_VERSION="v3.1.1"
 RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
 

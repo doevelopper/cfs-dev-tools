@@ -36,10 +36,10 @@ ARG HTTP_PROXY=$PROXY
 ARG HTTPS_PROXY=$PROXY
 ARG NO_PROXY=$NOPROXY
 ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.16}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.0}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.4}
 ARG MVN_VERSION=${MVN_VERSION:-3.6.3}
-ARG GRADLE_VERSION=${GRADLE_VERSION:-6.0.1}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-1.2.1}
+ARG GRADLE_VERSION=${GRADLE_VERSION:-6.2}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-2.1.1}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
 ARG BOOST_VERSION_PATCH=0
@@ -47,8 +47,8 @@ ARG BOOST_VERSION=${BOOST_VERSION_MAJ}.${BOOST_VERSION_MIN}.${BOOST_VERSION_PATC
 ARG BOOST_RELEASE=${BOOST_VERSION_MAJ}_${BOOST_VERSION_MIN}_${BOOST_VERSION_PATCH}
 ARG APR_VERSION=1.7.0
 ARG APU_VERSION=1.6.1
-ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.13}
-ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.2}
+ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.14}
+ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.1}
 ARG QT_SHA_256=0cd82c80287a783bd5db1339b6184803d57517c9450ffe16f505254853f0a41f
 ARG T_MD5=c839aed9d551bdc8411a0a33e5ae46f3
 
@@ -82,6 +82,7 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
       libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
       iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof \
       ccache gcovr lcov node-lcov-parse tmux libsqlite3-dev \
+      libxkbcommon-x11-dev libxkbcommon-x11-0  p7zip-full zip \
     && apt-get clean --assume-yes \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
@@ -371,22 +372,35 @@ COPY qt-installer-script.qs qt-opensource-linux-x64-* /tmp/
 
 #RUN objdump -p ./qt-opensource-linux-x64-${Q_VERSION}.run | grep NEEDED
 
+# RUN cd /tmp \
+   # && TimePoint="$(date +%s)" \
+   # && if [ ! -f "/tmp/qt-opensource-linux-x64-${Q_VERSION}.run" ]; \
+        # then \
+            # curl -k -L -O "http://download.qt.io/official_releases/qt/${Q_MAJOR_VERSION}/${Q_VERSION}/qt-opensource-linux-x64-${Q_VERSION}.run"; \
+        # fi \
+   # && chmod +x ./qt-installer-script.qs \
+   # && chmod +x ./qt-opensource-linux-x64-${Q_VERSION}.run \
+   # && xvfb-run ./qt-opensource-linux-x64-${Q_VERSION}.run --script ./qt-installer-script.qs --platform minimal --verbose \
+   # && rm -vf qt-opensource-linux-x64-${Q_VERSION}.run qt-installer-script.qs \
+   # && TimePoint="$(($(date +%s)-TimePoint))" \
+   # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+# lists took from 
+# https://download.qt.io/online/qtsdkrepository/linux_x64/desktop/qt5_5141/Updates.xml
+
 RUN cd /tmp \
    && TimePoint="$(date +%s)" \
-   && if [ ! -f "/tmp/qt-opensource-linux-x64-${Q_VERSION}.run" ]; \
-		then \
-			curl -k -L -O "http://download.qt.io/official_releases/qt/${Q_MAJOR_VERSION}/${Q_VERSION}/qt-opensource-linux-x64-${Q_VERSION}.run"; \
-		fi \
-   && chmod +x ./qt-installer-script.qs \
-   && chmod +x ./qt-opensource-linux-x64-${Q_VERSION}.run \
-   && xvfb-run ./qt-opensource-linux-x64-${Q_VERSION}.run --script ./qt-installer-script.qs --platform minimal --verbose \
-   && rm -vf qt-opensource-linux-x64-${Q_VERSION}.run qt-installer-script.qs \
-   && TimePoint="$(($(date +%s)-TimePoint))" \
+   && ./install-qt.sh --directory /opt/Qt --host linux_x64 --target desktop --toolchain gcc_64 --version ${Q_VERSION} \
+		qtbase qtconnectivity qtx11extras qtwebchannel qtmultimedia qttranslations qtgraphicaleffects qtsvg qtdeclarative \
+		qtwebsockets qtimageformats qttools qtxmlpatterns qtsensors qtserialport qtlocation\
+		qtquickcontrols qtquickcontrols2 qt3d qtwebview qtserialbus qtscxml qtgamepad qtspeech qtcharts qtdatavis3d qtpurchasing\
+		qtvirtualkeyboard  qtwebengine qtnetworkauth qtwebglplugin qtlottie qtquick3d qtquicktimeline \
+		qtremoteobjects icu qtscript \
    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 ENV QT_INSTALL_DIR=/opt/Qt
 ENV QTDIR=${QT_INSTALL_DIR}/${Q_VERSION}/gcc_64
-ENV PATH="${QTDIR}/bin/:${QT_INSTALL_DIR}/Tools/QtCreator/bin:${PATH}:/opt/depot_tools"
+ENV PATH="${QTDIR}/bin/:${PATH}"
 ENV PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
 
 RUN cd /tmp \
@@ -576,8 +590,8 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
     && apt-get -qq install --assume-yes --no-install-recommends \
       ca-certificates apt-transport-https \
       xz-utils unzip wget curl openssh-server openssh-client \
-	  vim python3 hxtools perl xotcl tcl-expect tcl dos2unix \
-	  libsqlite3-0 iptables jq htop most lsof
+      vim python3 hxtools perl xotcl tcl-expect tcl dos2unix \
+      libsqlite3-0 iptables jq htop most lsof
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
@@ -588,7 +602,7 @@ RUN cd /tmp \
 
 COPY --from=appsbuilder /opt/staging/bin /usr/local/bin
 COPY --from=appsbuilder /opt/staging/lib/*.so /usr/local/lib/
-COPY --from=appsbuilder /opt/Qt/5.13.2/gcc_64/lib/libQt*.so /usr/local/lib/
+COPY --from=appsbuilder /opt/Qt/5.14.1/gcc_64/lib/libQt*.so /usr/local/lib/
 
 # Do some cleanup
 RUN DEBIAN_FRONTEND=noninteractive  apt-get clean && \

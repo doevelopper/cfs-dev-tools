@@ -54,6 +54,27 @@
         when: always
         expire_in: 7 days
 
+.docs-changes:
+    only:
+        refs:
+            - master
+            - merge_requests
+        changes:
+            - "**/*.{md}"
+            - "{doc}/**/*"
+
+.container-changes:
+    only:
+        refs:
+            - master
+            - merge_requests
+        changes:
+
+            - "Dockerfile"
+            - "**/*/Dockerfile"
+            - ".gitlab-ci.yml"
+            - "**/*.{rb,erb,sh,yml,example,types}"
+
 # ---------------------------------------------------------------------
 #
 # Various functions....
@@ -336,7 +357,7 @@
     before_script:
         - echo "${GOAL}ming ${MODULE} in (${MODULE_DIR}) (${CI_JOB_STAGE}[${CI_JOB_NAME}])"
         - export VERSIONFILE=${CI_PROJECT_DIR}/src/main/resources/docker/${ARCH}/${MODULE_DIR}/VERSION_FILE
-        - "[ -f ${VERSIONFILE} ] && export SEM_VERSION=$(head ${VERSIONFILE}) || export SEM_VERSION=0.0.1"
+        - "[ -f ${VERSIONFILE} ] && export SEM_VERSION=$(head ${VERSIONFILE}) || export SEM_VERSION=${BUMP_VERSION}"
         - export BUILD_LOG="2>&1 | tee ${CI_PROJECT_DIR}/${MODULE}.log"
         - export DTR_PASSWORD=$DOCKER_PASSWORD
         - export SECOND_LEVEL="omg eprosima adlinktech"

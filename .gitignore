@@ -278,3 +278,6 @@ src/main/resources/docker/amd64/rti/packages/*.tar.gz
 packages/
 qt-opensource-linux-x64-5.13.0.run
 *.run
+
+**.vim/tmp/*
+

@@ -35,12 +35,12 @@ ARG no_proxy=$NOPROXY
 ARG HTTP_PROXY=$PROXY
 ARG HTTPS_PROXY=$PROXY
 ARG NO_PROXY=$NOPROXY
-ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.16}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.3}
+ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.17}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.0-rc1}
 ARG MVN_VERSION=${MVN_VERSION:-3.6.3}
-ARG GRADLE_VERSION=${GRADLE_VERSION:-6.1}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-2.0.0}
-ARG GST_VERSION=${GST_VERSION:-1.16.1}
+ARG GRADLE_VERSION=${GRADLE_VERSION:-6.2}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-2.1.1}
+ARG GST_VERSION=${GST_VERSION:-1.16.2}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
 ARG BOOST_VERSION_PATCH=0
@@ -49,10 +49,11 @@ ARG BOOST_RELEASE=${BOOST_VERSION_MAJ}_${BOOST_VERSION_MIN}_${BOOST_VERSION_PATC
 ARG APR_VERSION=1.7.0
 ARG APU_VERSION=1.6.1
 ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.14}
-ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.0}
+ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.1}
+ARG QTCREATOR_VERSION=${QTCREATOR_VERSION:-4.11.1}
 ARG QT_SHA_256=0cd82c80287a783bd5db1339b6184803d57517c9450ffe16f505254853f0a41f
 ARG T_MD5=c839aed9d551bdc8411a0a33e5ae46f3
-ARG GDB_VERSION=${GDB_VERSION:-8.3.1}
+ARG GDB_VERSION=${GDB_VERSION:-9.1}
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV LC_ALL C.UTF-8
@@ -82,7 +83,8 @@ RUN Time="$(date +%s)" \
       libogg-dev liboggz2-dev python-ogg libisocodes-dev gir1.2-isocodes-1.2 libpng++-dev \
       libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
       iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof hxtools \
-      ccache gcovr lcov node-lcov-parse tmux libsqlite3-dev afl-cov \
+      ccache gcovr lcov node-lcov-parse tmux libsqlite3-dev gnupg2\
+      libxkbcommon-x11-dev libxkbcommon-x11-0  p7zip-full zip \
     && apt-get clean --assume-yes \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
@@ -112,7 +114,7 @@ RUN cd /tmp \
 
 RUN  cd /tmp \
     # && curl -x '${HTTPS_PROXY}' -L -O -k https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip\
-    && curl -L -O -k  https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip\
+    && curl -L -O -k  https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip\
     && unzip ninja-linux.zip  \
     && mv ninja /usr/bin/ninja \
     && rm ninja-linux.zip
@@ -178,7 +180,7 @@ RUN cd /tmp \
     && pip3 install cornichon \
     && pip install python-afl \
     && pip install sphinx_rtd_theme \
-    && pip install breathe \
+    && pip3 install breathe \
     && pip install gdb-tools \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
@@ -195,15 +197,23 @@ RUN cmake --version \
 RUN echo -e '\033[36;1m ******* Differnets QA tools installation ******** \033[0m'
 
 RUN cd /tmp \
+    && curl -L -O -k http://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+    && tar xvJf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+    && ls -lah  \
+    && mv -v clang+llvm-9.0.0-x86_64-pc-linux-gnu /opt/clang-llvm-9.0.0 \
+    && rm -Rvf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz
+
+RUN cd /tmp \
     && TimePoint="$(date +%s)" \
     && curl -L -O -k http://ftp.gnu.org/gnu/gdb/gdb-${GDB_VERSION}.tar.gz \
     && tar -xzf gdb-${GDB_VERSION}.tar.gz \
-    && cd gdb-${GDB_VERSION} \
-    && ./configure --prefix=/usr/local \
+    && mkdir gdb-${GDB_VERSION}-builds \
+    && cd gdb-${GDB_VERSION}-builds \
+    && ../gdb-${GDB_VERSION}/configure --prefix=/usr/local \
     && make -j$(nproc) \
     && make install \
     && cd /tmp \
-    && rm -rf gdb-${GDB_VERSION}.tar.gz gdb-${GDB_VERSION} \
+    && rm -rf gdb-${GDB_VERSION}.tar.gz gdb-${GDB_VERSION} gdb-${GDB_VERSION}-builds \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
@@ -326,7 +336,7 @@ RUN cd /tmp \
     && cd boost_${BOOST_RELEASE} \
     && ./bootstrap.sh --prefix=/usr/local --with-python=python3 \
     && ./b2 --help \
-    && ./b2 link=shared threading=multi variant=release address-model=64 --build-dir=/tmp/boost-build > /dev/null 2>&1 \
+    && ./b2 link=shared threading=multi variant=release address-model=64 --build-dir=/tmp/boost-build cxxflags=-fPIC cxxstd=14  > /dev/null 2>&1 \
     && ./b2 install --prefix=/usr/local > /dev/null 2>&1 \
     && cd /tmp \
     && rm -rf boost_${BOOST_RELEASE} boost_${BOOST_RELEASE}.tar.gz boost-build \
@@ -544,22 +554,55 @@ RUN cd /tmp \
 RUN cd /opt \
     && git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
-COPY qt-installer-script.qs qt-opensource-linux-x64-* /tmp/
+#COPY qt-installer-script.qs qt-opensource-linux-x64-* /tmp/
+COPY qt-installer-script.qs install-qt.sh  /tmp/
 
 #RUN objdump -p ./qt-opensource-linux-x64-${Q_VERSION}.run | grep NEEDED
 
+COPY install-qt.sh install-qt.sh
+
+	
 RUN cd /tmp \
    && TimePoint="$(date +%s)" \
-   && if [ ! -f "/tmp/qt-opensource-linux-x64-${Q_VERSION}.run" ]; \
-		then \
-			curl -k -L -O "http://download.qt.io/official_releases/qt/${Q_MAJOR_VERSION}/${Q_VERSION}/qt-opensource-linux-x64-${Q_VERSION}.run"; \
-		fi \
-   && chmod +x ./qt-installer-script.qs \
-   && chmod +x ./qt-opensource-linux-x64-${Q_VERSION}.run \
-   && xvfb-run ./qt-opensource-linux-x64-${Q_VERSION}.run --script ./qt-installer-script.qs --platform minimal --verbose \
-   && rm -vf qt-opensource-linux-x64-${Q_VERSION}.run qt-installer-script.qs \
-   && TimePoint="$(($(date +%s)-TimePoint))" \
+   && chmod +x ./install-qt.sh \
+   && ./install-qt.sh --directory /opt/Qt --host linux_x64 --target desktop  --version ${QTCREATOR_VERSION} qtcreator \
    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+# lists took from 
+# https://download.qt.io/online/qtsdkrepository/linux_x64/desktop/qt5_5141/Updates.xml
+
+RUN cd /tmp \
+   && TimePoint="$(date +%s)" \
+   && ./install-qt.sh --directory /opt/Qt --host linux_x64 --target desktop --toolchain gcc_64 --version ${Q_VERSION} \
+		qtbase qtconnectivity qtx11extras qtwebchannel qtmultimedia qttranslations qtgraphicaleffects qtsvg qtdeclarative \
+		qtwebsockets qtimageformats qttools qtxmlpatterns qtsensors qtserialport qtlocation\
+		qtquickcontrols qtquickcontrols2 qt3d qtwebview qtserialbus qtscxml qtgamepad qtspeech qtcharts qtdatavis3d qtpurchasing\
+		qtvirtualkeyboard  qtwebengine qtnetworkauth qtwebglplugin qtlottie qtquick3d qtquicktimeline \
+		qtremoteobjects icu qtscript \
+   && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+#qtactiveqt qtwinextras qtcanvas3d  d3dcompiler_47 opengl32sw 
+
+# RUN cd /tmp \
+   # && TimePoint="$(date +%s)" \
+   # && chmod +x ./install-qt.sh \
+   # && ./install-qt.sh --version ${Q_VERSION} qtbase qtdeclarative qtscript qttools qtx11extras icu \
+   # && ./install-qt.sh --version ${QTCREATOR_VERSION} qtcreator \
+   # && echo "export PATH=/opt/Qt/${Q_VERSION}/gcc_64/bin:/opt/Qt/Tools/QtCreator/bin:\${PATH}" > /etc/profile.d/qt.sh \
+   # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+#RUN cd /tmp \
+#   && TimePoint="$(date +%s)" \
+#   && if [ ! -f "/tmp/qt-opensource-linux-x64-${Q_VERSION}.run" ]; \
+#		then \
+#			curl -k -L -O "http://download.qt.io/official_releases/qt/${Q_MAJOR_VERSION}/${Q_VERSION}/qt-opensource-linux-x64-${Q_VERSION}.run"; \
+#		fi \
+#   && chmod +x ./qt-installer-script.qs \
+#   && chmod +x ./qt-opensource-linux-x64-${Q_VERSION}.run \
+#   && xvfb-run ./qt-opensource-linux-x64-${Q_VERSION}.run --script ./qt-installer-script.qs --platform minimal --verbose \
+#   && rm -vf qt-opensource-linux-x64-${Q_VERSION}.run qt-installer-script.qs \
+#   && TimePoint="$(($(date +%s)-TimePoint))" \
+#   && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 ENV QT_INSTALL_DIR=/opt/Qt
 ENV QTDIR=${QT_INSTALL_DIR}/${Q_VERSION}/gcc_64
@@ -706,18 +749,19 @@ RUN cd /tmp \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone  --depth=1 git://git.linuxtv.org/v4l-utils.git \
-    && cd v4l-utils \
-    && autoreconf -vfi \
-    && ./configure --prefix=/usr/local \
-    && make > /dev/null 2>&1 \
-    && make install \
-    && cd /tmp/ \
-    && rm -Rf v4l-utils \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+#  fatal error: QToolBar: No such file or directory ....
+# RUN cd /tmp \
+    # && TimePoint="$(date +%s)" \
+    # && git clone  --depth=1 git://git.linuxtv.org/v4l-utils.git \
+    # && cd v4l-utils \
+    # && autoreconf -vfi \
+    # && ./configure --prefix=/usr/local \
+    # && make \
+    # && make install \
+    # && cd /tmp/ \
+    # && rm -Rf v4l-utils \
+    # && TimePoint="$(($(date +%s)-TimePoint))" \
+    # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 #Automated static analysis tools for binary programs
 RUN cd /tmp \
