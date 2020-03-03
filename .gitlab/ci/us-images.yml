@@ -38,7 +38,7 @@ docker:build:common-us-apps:
     stage: Build microservices image
     variables:
        VERSION: 0.0.1
-       MODULE: linux-apps
+       MODULE: common-apps
        MODULE_DIR: common-apps
        DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
 
@@ -58,7 +58,7 @@ docker:build:eprosima-us-apps:
     stage: Build microservices image
     variables:
        VERSION: 0.0.1
-       MODULE: fast-rtps-apps
+       MODULE: eprosima-apps
        MODULE_DIR: eprosima-apps
        DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
 
@@ -68,7 +68,7 @@ docker:build:rti-us-apps:
     stage: Build microservices image
     variables:
        VERSION: 0.0.1
-       MODULE: rti-dds-apps
+       MODULE: rti-apps
        MODULE_DIR: rti-apps
        DOCKER_FILE: src/main/resources/docker/${ARCH}/${MODULE_DIR}/Dockerfile
 

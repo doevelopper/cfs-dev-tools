@@ -36,10 +36,10 @@ ARG HTTP_PROXY=$PROXY
 ARG HTTPS_PROXY=$PROXY
 ARG NO_PROXY=$NOPROXY
 ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.17}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.0-rc1}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.0-rc2}
 ARG MVN_VERSION=${MVN_VERSION:-3.6.3}
-ARG GRADLE_VERSION=${GRADLE_VERSION:-6.2}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-2.1.1}
+ARG GRADLE_VERSION=${GRADLE_VERSION:-6.2.1}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-2.2.0}
 ARG GST_VERSION=${GST_VERSION:-1.16.2}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
@@ -197,11 +197,14 @@ RUN cmake --version \
 RUN echo -e '\033[36;1m ******* Differnets QA tools installation ******** \033[0m'
 
 RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
     && curl -L -O -k http://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
     && tar xvJf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
     && ls -lah  \
     && mv -v clang+llvm-9.0.0-x86_64-pc-linux-gnu /opt/clang-llvm-9.0.0 \
-    && rm -Rvf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz
+    && rm -Rvf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
@@ -561,14 +564,15 @@ COPY qt-installer-script.qs install-qt.sh  /tmp/
 
 COPY install-qt.sh install-qt.sh
 
-	
+
 RUN cd /tmp \
    && TimePoint="$(date +%s)" \
    && chmod +x ./install-qt.sh \
    && ./install-qt.sh --directory /opt/Qt --host linux_x64 --target desktop  --version ${QTCREATOR_VERSION} qtcreator \
+   && TimePoint="$(($(date +%s)-TimePoint))" \
    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-# lists took from 
+# lists took from
 # https://download.qt.io/online/qtsdkrepository/linux_x64/desktop/qt5_5141/Updates.xml
 
 RUN cd /tmp \
@@ -579,9 +583,10 @@ RUN cd /tmp \
 		qtquickcontrols qtquickcontrols2 qt3d qtwebview qtserialbus qtscxml qtgamepad qtspeech qtcharts qtdatavis3d qtpurchasing\
 		qtvirtualkeyboard  qtwebengine qtnetworkauth qtwebglplugin qtlottie qtquick3d qtquicktimeline \
 		qtremoteobjects icu qtscript \
+   && TimePoint="$(($(date +%s)-TimePoint))" \
    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-#qtactiveqt qtwinextras qtcanvas3d  d3dcompiler_47 opengl32sw 
+#qtactiveqt qtwinextras qtcanvas3d  d3dcompiler_47 opengl32sw
 
 # RUN cd /tmp \
    # && TimePoint="$(date +%s)" \

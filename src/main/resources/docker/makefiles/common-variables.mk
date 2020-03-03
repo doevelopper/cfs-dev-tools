@@ -32,11 +32,11 @@ endif
 ifeq ($(KBUILD_VERBOSE),1)
     quiet =
     Q =
-	QQ =
+    QQ =
 else
     quiet=quiet_
     Q = @
-	QQ = > /dev/null
+    QQ = > /dev/null
 endif
 
 ifneq ($(findstring s,$(filter-out --%,$(MAKEFLAGS))),)

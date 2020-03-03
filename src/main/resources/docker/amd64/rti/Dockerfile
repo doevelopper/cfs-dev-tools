@@ -37,12 +37,12 @@ ARG PROXY_HOST
 ARG PROXY_PORT
 ARG PROXY=${PROXY_HOST}:${PROXY_PORT}
 
-
-ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.15}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.4}
-ARG MVN_VERSION=${MVN_VERSION:-3.6.2}
-ARG GRADLE_VERSION=${GRADLE_VERSION:-5.6.2}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-1.1.0}
+ARG GDB_VERSION=${GDB_VERSION:-9.1}
+ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.17}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.0-rc1}
+ARG MVN_VERSION=${MVN_VERSION:-3.6.3}
+ARG GRADLE_VERSION=${GRADLE_VERSION:-6.2}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-2.1.1}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
 ARG BOOST_VERSION_PATCH=0
@@ -50,8 +50,9 @@ ARG BOOST_VERSION=${BOOST_VERSION_MAJ}.${BOOST_VERSION_MIN}.${BOOST_VERSION_PATC
 ARG BOOST_RELEASE=${BOOST_VERSION_MAJ}_${BOOST_VERSION_MIN}_${BOOST_VERSION_PATCH}
 ARG APR_VERSION=1.7.0
 ARG APU_VERSION=1.6.1
-ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.13}
+ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.14}
 ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.1}
+ARG QTCREATOR_VERSION=${QTCREATOR_VERSION:-4.11.1}
 ARG QT_SHA_256=0cd82c80287a783bd5db1339b6184803d57517c9450ffe16f505254853f0a41f
 ARG T_MD5=c839aed9d551bdc8411a0a33e5ae46f3
 
@@ -82,6 +83,8 @@ RUN apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
         libogg-dev liboggz2-dev python-ogg libisocodes-dev gir1.2-isocodes-1.2 libpng++-dev \
         libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
         iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof hxtools \
+        ccache gcovr lcov node-lcov-parse tmux libsqlite3-dev gnupg2\
+        libxkbcommon-x11-dev libxkbcommon-x11-0  p7zip-full zip \
     && apt-get clean --assume-yes  \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
@@ -155,7 +158,9 @@ RUN cd /tmp \
     && ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh  \
     && rm -f ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
 
-RUN pip install -q --no-cache-dir conan \
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && pip install -q --no-cache-dir conan \
     && pip install --upgrade conan_package_tools \
     && pip install cpplint \
     && pip3 install meson \
@@ -171,8 +176,13 @@ RUN pip install -q --no-cache-dir conan \
     && pip install cpp-coveralls \
     && pip install coverxygen \
     && pip install doxygen-junit \
+    && pip3 install cornichon \
     && pip install python-afl \
-    && pip install gdb-tools
+    && pip install sphinx_rtd_theme \
+    && pip3 install breathe \
+    && pip install gdb-tools \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
 RUN cmake --version \
     && make --version \
