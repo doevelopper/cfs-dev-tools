@@ -56,7 +56,8 @@ RUN cd /tmp \
     && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Fast-RTPS-Gen.git \
     && cd Fast-RTPS-Gen \
     && gradle assemble \
-    && cp -v share/fastrtps/fastrtpsgen.jar  /opt/cmake/bin/ \
+#    && cp -v share/fastrtps/fastrtpsgen.jar  /opt/cmake/bin/ \
+    && cp -v build/libs/fastrtpsgen.jar  /opt/cmake/bin/ \
     && cd /tmp/ \
     && java -jar /opt/cmake/bin/fastrtpsgen.jar -version \
     && rm -Rvf Fast-RTPS-Gen \

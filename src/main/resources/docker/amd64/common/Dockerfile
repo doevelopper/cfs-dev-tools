@@ -36,10 +36,11 @@ ARG HTTP_PROXY=$PROXY
 ARG HTTPS_PROXY=$PROXY
 ARG NO_PROXY=$NOPROXY
 ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.17}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.0-rc2}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.0}
 ARG MVN_VERSION=${MVN_VERSION:-3.6.3}
-ARG GRADLE_VERSION=${GRADLE_VERSION:-6.2.1}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-2.2.0}
+ARG LLVM_VERSION=${LLVM_VERSION:-10.0.0}
+ARG GRADLE_VERSION=${GRADLE_VERSION:-6.3}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-3.0.0}
 ARG GST_VERSION=${GST_VERSION:-1.16.2}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
@@ -49,8 +50,8 @@ ARG BOOST_RELEASE=${BOOST_VERSION_MAJ}_${BOOST_VERSION_MIN}_${BOOST_VERSION_PATC
 ARG APR_VERSION=1.7.0
 ARG APU_VERSION=1.6.1
 ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.14}
-ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.1}
-ARG QTCREATOR_VERSION=${QTCREATOR_VERSION:-4.11.1}
+ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.2}
+ARG QTCREATOR_VERSION=${QTCREATOR_VERSION:-4.11.2}
 ARG QT_SHA_256=0cd82c80287a783bd5db1339b6184803d57517c9450ffe16f505254853f0a41f
 ARG T_MD5=c839aed9d551bdc8411a0a33e5ae46f3
 ARG GDB_VERSION=${GDB_VERSION:-9.1}
@@ -84,7 +85,7 @@ RUN Time="$(date +%s)" \
       libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
       iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof hxtools \
       ccache gcovr lcov node-lcov-parse tmux libsqlite3-dev gnupg2\
-      libxkbcommon-x11-dev libxkbcommon-x11-0  p7zip-full zip \
+      libxkbcommon-x11-dev libxkbcommon-x11-0  p7zip-full zip libz3-dev \
     && apt-get clean --assume-yes \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
@@ -198,11 +199,15 @@ RUN echo -e '\033[36;1m ******* Differnets QA tools installation ******** \033[0
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -L -O -k http://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
-    && tar xvJf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+#    && curl -L -O -k http://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+    && curl -L -O -k  https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
+#    && tar xvJf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+    && tar xvJf clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
     && ls -lah  \
-    && mv -v clang+llvm-9.0.0-x86_64-pc-linux-gnu /opt/clang-llvm-9.0.0 \
-    && rm -Rvf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+#    && mv -v clang+llvm-9.0.0-x86_64-pc-linux-gnu /opt/clang-llvm-9.0.0 \
+    && mv -v clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04 /opt/clang-llvm-10.0.0 \
+#    && rm -Rvf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+    && rm -Rvf clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
@@ -556,6 +561,14 @@ RUN cd /tmp \
 
 RUN cd /opt \
     && git clone https://chromium.googlesource.com/chromium/tools/depot_tools
+
+# Install repo
+#RUN curl https://storage.googleapis.com/git-repo-downloads/repo > /usr/bin/repo \
+#  && chmod a+x /usr/bin/repo
+# mkdir -p ~/.bin
+# PATH="${HOME}/.bin:${PATH}"
+# curl https://storage.googleapis.com/git-repo-downloads/repo > ~/.bin/repo
+# chmod a+rx ~/.bin/repo
 
 #COPY qt-installer-script.qs qt-opensource-linux-x64-* /tmp/
 COPY qt-installer-script.qs install-qt.sh  /tmp/
