@@ -22,7 +22,7 @@
 #        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #
 
-ARG BASE_IMAGE=amd64/ubuntu:19.10
+ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
 #docker build --build-arg PROXY=$HTTP_PROXY
@@ -35,12 +35,13 @@ ARG no_proxy=$NOPROXY
 ARG HTTP_PROXY=$PROXY
 ARG HTTPS_PROXY=$PROXY
 ARG NO_PROXY=$NOPROXY
-ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.17}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.0}
+ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.18}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.rc2}
 ARG MVN_VERSION=${MVN_VERSION:-3.6.3}
 ARG LLVM_VERSION=${LLVM_VERSION:-10.0.0}
-ARG GRADLE_VERSION=${GRADLE_VERSION:-6.3}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-3.0.0}
+ARG GRADLE_VERSION=${GRADLE_VERSION:-6.5.1}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-3.3.0}
+ARG BAZEL_TOOL_VERSION=${BAZEL_TOOL_VERSION:-3.3.0}
 ARG GST_VERSION=${GST_VERSION:-1.16.2}
 ARG BOOST_VERSION_MAJ=1
 ARG BOOST_VERSION_MIN=71
@@ -51,10 +52,11 @@ ARG APR_VERSION=1.7.0
 ARG APU_VERSION=1.6.1
 ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.14}
 ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.2}
-ARG QTCREATOR_VERSION=${QTCREATOR_VERSION:-4.11.2}
+ARG QTCREATOR_VERSION=${QTCREATOR_VERSION:-4.12.3}
 ARG QT_SHA_256=0cd82c80287a783bd5db1339b6184803d57517c9450ffe16f505254853f0a41f
 ARG T_MD5=c839aed9d551bdc8411a0a33e5ae46f3
-ARG GDB_VERSION=${GDB_VERSION:-9.1}
+ARG GDB_VERSION=${GDB_VERSION:-9.2}
+ARG GRPC_RELEASE=${GRPC_RELEASE:-v1.29.1}
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV LC_ALL C.UTF-8
@@ -68,7 +70,7 @@ RUN Time="$(date +%s)" \
       build-essential git xz-utils unzip wget curl openssh-server openssh-client \
       gawk vim vim-nox texinfo gtk-doc-tools autogen autogen-doc \
       python-pip python-dev python-wheel cython python-setuptools \
-      python3-pip python3-dev python3-wheel cython3 python3-setuptools \
+      python3-pip python3-dev python3-wheel cython3 python3-setuptools python3-tk \
       ruby ruby-dev libjpeg-dev libudev-dev libmpfr-dev libccrtp-dev \
       libglib2.0-dev libglib2.0-bin libglib2.0-0 hxtools\
       xvfb xauth libx11-xcb1 libfontconfig1 libfontconfig1-dev libdbus-1-3 libgl1-mesa-dev \
@@ -85,7 +87,7 @@ RUN Time="$(date +%s)" \
       libtheora-dev libtheora-bin libvorbis-dev python-pyvorbis libogg-vorbis-decoder-perl \
       iptables jq htop extra-cmake-modules libmicrohttpd-dev most lsof hxtools \
       ccache gcovr lcov node-lcov-parse tmux libsqlite3-dev gnupg2\
-      libxkbcommon-x11-dev libxkbcommon-x11-0  p7zip-full zip libz3-dev \
+      libxkbcommon-x11-dev libxkbcommon-x11-0  p7zip-full zip libz3-dev  \
     && apt-get clean --assume-yes \
     && apt-get --assume-yes --quiet clean \
     && apt-get --assume-yes --quiet autoremove \
@@ -108,39 +110,54 @@ RUN [ -n "$http_proxy" ] && printf "use_proxy=yes\nhttp_proxy=$http_proxy\nhttps
 RUN echo -e '\033[36;1m ******* Differents builds tools installation ******** \033[0m'
 
 RUN cd /tmp \
+    && Time="$(date +%s)" \
     && curl -L -O -k https://cmake.org/files/v${CMAKE_MAJOR_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
     && tar -xvf cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz > /dev/null \
     && rm -v cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
-    && mv -v cmake-${CMAKE_VERSION}-Linux-x86_64 /opt/cmake
+    && mv -v cmake-${CMAKE_VERSION}-Linux-x86_64 /opt/cmake \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
 RUN  cd /tmp \
+    && Time="$(date +%s)" \
     # && curl -x '${HTTPS_PROXY}' -L -O -k https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip\
     && curl -L -O -k  https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip\
     && unzip ninja-linux.zip  \
     && mv ninja /usr/bin/ninja \
-    && rm ninja-linux.zip
+    && rm ninja-linux.zip \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
 # COPY [ -f ./jdk-8u212-linux-x64.tar.gz ] && [] jdk-8u212-linux-x64.tar.gz /tmp
 
 RUN  cd /tmp \
+    && Time="$(date +%s)" \
 #  http://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u212-linux-x64.tar.gz
     && curl -L -O -k https://github.com/frekele/oracle-java/releases/download/8u212-b10/jdk-8u212-linux-x64.tar.gz \
     && tar -xzf jdk-8u212-linux-x64.tar.gz -C /opt/ \
-    && rm jdk-8u212-linux-x64.tar.gz
+    && rm jdk-8u212-linux-x64.tar.gz \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
 RUN cd /tmp \
+    && Time="$(date +%s)" \
     &&  wget --no-check-certificate \
    https://www-eu.apache.org/dist/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz \
     && tar -xzf apache-maven-${MVN_VERSION}-bin.tar.gz > /dev/null 2>&1 \
     && mv apache-maven-${MVN_VERSION}/ /opt/apache-maven \
-    && rm -v apache-maven-${MVN_VERSION}-bin.tar.gz
+    && rm -v apache-maven-${MVN_VERSION}-bin.tar.gz \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
 RUN cd /tmp \
+    && Time="$(date +%s)" \
     && curl -L -O -k https://downloads.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip \
     && mkdir -pv /opt/gradle \
     && unzip gradle-${GRADLE_VERSION}-bin.zip  \
     && mv gradle-${GRADLE_VERSION}  /opt/gradle/ \
-    && rm -f gradle-${GRADLE_VERSION}-bin.zip
+    && rm -f gradle-${GRADLE_VERSION}-bin.zip \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
 ENV JAVA_HOME /opt/jdk1.8.0_212
 ENV JRE_HOME /opt/jdk1.8.0_212/jre
@@ -162,6 +179,18 @@ RUN cd /tmp \
 
 RUN cd /tmp \
     && Time="$(date +%s)" \
+    && curl -L -O -k https://github.com/bazelbuild/buildtools/releases/download/${BAZEL_TOOL_VERSION}/buildifier \
+    && chmod 744 buildifier && mv -v buildifier /usr/bin/ \
+    && curl -L -O -k https://github.com/bazelbuild/buildtools/releases/download/${BAZEL_TOOL_VERSION}/buildozer \
+    && chmod 744 buildozer && mv -v buildozer /usr/bin/ \
+    && curl -L -O -k https://github.com/bazelbuild/buildtools/releases/download/${BAZEL_TOOL_VERSION}/unused_deps \
+    && chmod 744 unused_deps && mv -v  unused_deps /usr/bin/ \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
+
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && pip3 install --upgrade pip \
     && pip install -q --no-cache-dir conan \
     && pip install --upgrade conan_package_tools \
     && pip install cpplint \
@@ -180,37 +209,38 @@ RUN cd /tmp \
     && pip install doxygen-junit \
     && pip3 install cornichon \
     && pip install python-afl \
-    && pip install sphinx_rtd_theme \
+    && pip3 install sphinx_rtd_theme sphinx sphinxcontrib-bibtex \
+    && pip3 install nose coverage pytest pytest-cov \
     && pip3 install breathe \
     && pip install gdb-tools \
+    && pip3 install licenseheaders \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
-
-RUN cmake --version \
-    && make --version \
-    && gcc --version \
-    && java -version \
-    && mvn --version \
-    && gradle -v \
-    && bazel version \
-    && conan --version || true
 
 RUN echo -e '\033[36;1m ******* Differnets QA tools installation ******** \033[0m'
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-#    && curl -L -O -k http://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+##    && curl -L -O -k http://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+##    && tar xvJf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
+##    && mv -v clang+llvm-9.0.0-x86_64-pc-linux-gnu /opt/clang-llvm-9.0.0 \
+##    && rm -Rvf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
     && curl -L -O -k  https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
-#    && tar xvJf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
     && tar xvJf clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
-    && ls -lah  \
-#    && mv -v clang+llvm-9.0.0-x86_64-pc-linux-gnu /opt/clang-llvm-9.0.0 \
+#    && ls -lah  \
     && mv -v clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04 /opt/clang-llvm-10.0.0 \
-#    && rm -Rvf clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
     && rm -Rvf clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
+#    && curl -L -O -k    https://apt.llvm.org/llvm.sh \
+#    && chmod +x llvm.sh \
+#    && ./llvm.sh \
+#    && rm -vf llvm.sh \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
+ENV PATH=${PATH}:/opt/clang-llvm-10.0.0/bin
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/clang-llvm-10.0.0/lib
+
+# Build and transform stdout into . to reduce the noise
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
     && curl -L -O -k http://ftp.gnu.org/gnu/gdb/gdb-${GDB_VERSION}.tar.gz \
@@ -218,8 +248,9 @@ RUN cd /tmp \
     && mkdir gdb-${GDB_VERSION}-builds \
     && cd gdb-${GDB_VERSION}-builds \
     && ../gdb-${GDB_VERSION}/configure --prefix=/usr/local \
-    && make -j$(nproc) \
+    && make -j $(nproc --all) | stdbuf -o0 tr -cd '\n' | stdbuf -o0 tr '\n' '.' \
     && make install \
+    && make clean && ldconfig \
     && cd /tmp \
     && rm -rf gdb-${GDB_VERSION}.tar.gz gdb-${GDB_VERSION} gdb-${GDB_VERSION}-builds \
     && TimePoint="$(($(date +%s)-TimePoint))" \
@@ -242,6 +273,8 @@ RUN cd /tmp \
     && TimePoint="$(date +%s)" \
     && git clone --depth=1 https://github.com/danmar/cppcheck.git \
     && cd cppcheck \
+#   && make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG \
+#           -Wall -Wno-sign-compare -Wno-unused-function" -j $(nproc) install
     && cmake -E make_directory build \
     && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
 #        -DANALYZE_ADDRESS=ON -DANALYZE_THREAD=ON -DANALYZE_UNDEFINED=ON \
@@ -267,6 +300,37 @@ RUN cd /tmp \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
+RUN Time="$(date +%s)" \
+    && apt-get -qq -o Acquire::Check-Valid-Until="false" update --assume-yes \
+    && apt-get -qq install --assume-yes --no-install-recommends \
+    libncurses5 \
+    && apt-get clean --assume-yes \
+    && apt-get --assume-yes --quiet clean \
+    && apt-get --assume-yes --quiet autoremove \
+    && rm -rvf /var/lib/apt/lists/{apt,dpkg,cache,log} /tmp/* /var/tmp/* \
+    && rm -rf /usr/share/man/ \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
+
+RUN cmake --version \
+    && doxygen --version \
+    && uncrustify --version \
+    && cppcheck --version \
+    && make --version \
+    && mvn --version \
+    && gradle -v \
+    && bazel version \
+    && conan --version || true
+
+RUN gdb --version \
+    && java -version \
+    && gcc --version
+
+RUN cmake --version \
+    && clang --version \
+    && clang-format --version \
+    && clang-tidy -version
+
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
     && git clone --depth=1 https://github.com/google/googletest.git \
@@ -290,6 +354,46 @@ RUN cd /tmp \
     && cmake --build build --target install \
     && cd /tmp \
     && rm -rf benchmark \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && curl -L -O -k http://lcamtuf.coredump.cx/afl/releases/afl-2.52b.tgz \
+    && tar zxvf afl-2.52b.tgz --one-top-level=american-fuzzy-lop \
+    && tar -xvzf afl-2.52b.tgz \
+    && cd afl-2.52b \
+    && make clean  > /dev/null 2>&1\
+    && make > /dev/null 2>&1 \
+#    && make DESTDIR=/opt/afl  BINDIR=/opt/afl/bin DATAROOTDIR=/opt/afl/share LIBDIR=/opt/afl/lib install \
+    && make DESTDIR=/usr/local install \
+    && make clean && ldconfig \
+    && cd /tmp \
+    && rm -rf afl-2.52b* american-fuzzy-lop \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+#Automated static analysis tools for binary programs
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && git clone  --depth=1 https://github.com/cmu-sei/pharos.git \
+    && cd pharos \
+    && cd /tmp/ \
+    # && rm -Rf pharos \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && git clone --depth=1 https://github.com/libcheck/check.git \
+    && cd check \
+    && cmake -E make_directory build \
+    && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
+    && cmake --build build --target all --clean-first > /dev/null 2>&1 \
+    && CTEST_OUTPUT_ON_FAILURE=1 cmake --build build --target test \
+    && cmake --build build --target install || true \
+    && cd /tmp \
+    && rm -rf check \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
@@ -323,16 +427,16 @@ RUN cd /tmp \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1 https://github.com/jeaye/stdman.git \
-    && cd stdman \
-    && ./configure --prefix=/usr/local \
-    && make install > /dev/null 2>&1 \
-    && cd /tmp \
-    && rm -Rf stdman \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+#RUN cd /tmp \
+#    && TimePoint="$(date +%s)" \
+#    && git clone --depth=1 https://github.com/jeaye/stdman.git \
+#    && cd stdman \
+#    && ./configure --prefix=/usr/local \
+#    && make install > /dev/null 2>&1 \
+#    && cd /tmp \
+#    && rm -Rf stdman \
+#    && TimePoint="$(($(date +%s)-TimePoint))" \
+#    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 ENV MANPATH=${MANPATH}:/usr/local/man:/usr/local/share/man:/usr/share/man:/usr/man
 ENV MANPAGER=most
@@ -383,35 +487,6 @@ RUN cd /tmp \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && curl -L -O -k http://lcamtuf.coredump.cx/afl/releases/afl-2.52b.tgz \
-    && tar zxvf afl-2.52b.tgz --one-top-level=american-fuzzy-lop \
-    && tar -xvzf afl-2.52b.tgz \
-    && cd afl-2.52b \
-    && make clean  > /dev/null 2>&1\
-    && make > /dev/null 2>&1 \
-#    && make DESTDIR=/opt/afl  BINDIR=/opt/afl/bin DATAROOTDIR=/opt/afl/share LIBDIR=/opt/afl/lib install \
-    && make DESTDIR=/usr/local install \
-    && cd /tmp \
-    && rm -rf afl-2.52b* american-fuzzy-lop \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1 https://github.com/libcheck/check.git \
-    && cd check \
-    && cmake -E make_directory build \
-    && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
-    && cmake --build build --target all --clean-first > /dev/null 2>&1 \
-    && CTEST_OUTPUT_ON_FAILURE=1 cmake --build build --target test \
-    && cmake --build build --target install || true \
-    && cd /tmp \
-    && rm -rf check \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
 # "Building IEEE doubles binary-decimal and decimal-binary ."
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
@@ -446,10 +521,11 @@ RUN cd /tmp \
     && git clone --depth=1 https://github.com/protocolbuffers/protobuf.git \
     && cd protobuf \
     && ./autogen.sh > /dev/null 2>&1  \
-    && ./configure --enable-samples --with-openssl=/usr --with-zlib=/usr --enable-silent-rules --prefix=/usr/local \
+    && ./configure --enable-static --enable-shared --enable-samples --with-openssl=/usr --with-zlib=/usr --enable-silent-rules --prefix=/usr/local \
     && make clean  > /dev/null 2>&1 \
     && make > /dev/null 2>&1 \
     && make install \
+    && make clean && ldconfig \
     && cd /tmp \
     && rm -rf protobuf \
     && TimePoint="$(($(date +%s)-TimePoint))" \
@@ -459,9 +535,9 @@ ENV PROTOBUF_HOME /usr/local
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -L -O -k http://www-us.apache.org/dist//xerces/c/3/sources/xerces-c-3.2.2.tar.gz \
-    && tar -xzf xerces-c-3.2.2.tar.gz \
-    && cd xerces-c-3.2.2/ \
+    && curl -L -O -k http://www-us.apache.org/dist//xerces/c/3/sources/xerces-c-3.2.3.tar.gz \
+    && tar -xzf xerces-c-3.2.3.tar.gz \
+    && cd xerces-c-3.2.3/ \
     && ./configure --prefix=/usr/local \
         --enable-static --enable-shared --enable-netaccessor-socket \
         --enable-transcoder-gnuiconv --enable-transcoder-iconv \
@@ -469,9 +545,10 @@ RUN cd /tmp \
     && make clean > /dev/null 2>&1 \
     && make > /dev/null 2>&1 \
     && make install > /dev/null 2>&1 \
+    && make clean && ldconfig \
     && cd /tmp \
-    && rm xerces-c-3.2.2.tar.gz \
-    && rm -rf xerces-c-3.2.2/ \
+    && rm xerces-c-3.2.3.tar.gz \
+    && rm -rf xerces-c-3.2.3/ \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
@@ -485,6 +562,7 @@ RUN cd /tmp \
     && make clean > /dev/null 2>&1 \
     && make > /dev/null 2>&1 \
     && make install \
+    && make clean && ldconfig \
     && cd /tmp \
     && rm -rf apr-${APR_VERSION}.tar.gz apr-${APR_VERSION} \
     && TimePoint="$(($(date +%s)-TimePoint))" \
@@ -498,6 +576,7 @@ RUN cd /tmp \
     && ./configure CPPFLAGS=-DXML_LARGE_SIZE --without-docbook --prefix=/usr/local \
     && make > /dev/null 2>&1 \
     && make install \
+    && make clean && ldconfig \
     && cd /tmp \
     && rm -rf libexpat \
     && TimePoint="$(($(date +%s)-TimePoint))" \
@@ -512,6 +591,7 @@ RUN cd /tmp \
     && make clean > /dev/null 2>&1  \
     && make > /dev/null 2>&1 \
     && make install \
+    && make clean && ldconfig \
     && cd /tmp \
     && rm -rf apr-util-${APU_VERSION}.tar.gz apr-util-${APU_VERSION} \
     && TimePoint="$(($(date +%s)-TimePoint))" \
@@ -527,6 +607,7 @@ RUN cd /tmp \
     && make clean > /dev/null 2>&1 \
     && make > /dev/null 2>&1 \
     && make install \
+    && make clean && ldconfig \
     && cd /tmp \
     && rm -rf logging-log4cxx \
     && TimePoint="$(($(date +%s)-TimePoint))" \
@@ -554,6 +635,7 @@ RUN cd /tmp \
     && ./configure --prefix=/usr/local  \
     && make > /dev/null 2>&1 \
     && make install \
+    && make clean && ldconfig \
     && cd /tmp \
     && rm -Rf breakpad \
     && TimePoint="$(($(date +%s)-TimePoint))" \
@@ -624,7 +706,8 @@ RUN cd /tmp \
 
 ENV QT_INSTALL_DIR=/opt/Qt
 ENV QTDIR=${QT_INSTALL_DIR}/${Q_VERSION}/gcc_64
-ENV PATH="${QTDIR}/bin/:${QT_INSTALL_DIR}/Tools/QtCreator/bin:${PATH}:/opt/depot_tools"
+#:/opt/depot_tools
+ENV PATH="${QTDIR}/bin/:${QT_INSTALL_DIR}/Tools/QtCreator/bin:${PATH}"
 ENV PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
 
 RUN cd /tmp \
@@ -634,6 +717,7 @@ RUN cd /tmp \
     && ./configure --prefix=/usr/local --bit-depth=all --chroma-format=all --enable-pic --enable-shared \
     && make > /dev/null 2>&1 \
     && make install \
+	&& make clean && ldconfig \
     && cd /tmp \
     && rm -rf x264 \
     && TimePoint="$(($(date +%s)-TimePoint))" \
@@ -641,7 +725,7 @@ RUN cd /tmp \
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -sL https://deb.nodesource.com/setup_13.x | bash - \
+    && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
     && apt-get -qq install --assume-yes --no-install-recommends nodejs \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
@@ -654,22 +738,9 @@ RUN cd /tmp \
     && qmake qwt.pro \
     && make > /dev/null 2>&1 \
     && make install DESTDIR=/usr/local \
+	&& make clean && ldconfig \
     && cd /tmp \
     && rm -rf qwt-6.1.4.tar.bz2 qwt-6.1.4 \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && curl -L -O -k https://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz \
-    && tar -xzf gsl-2.6.tar.gz \
-    && cd gsl-2.6 \
-    && ./autogen.sh \
-    && ./configure --enable-maintainer-mode --prefix=/usr/local \
-    && make -j$(nproc) > /dev/null 2>&1 \
-    && make install \
-    && cd /tmp \
-    && rm -rf gsl-2.6.tar.gz gsl-2.6 \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
@@ -684,23 +755,6 @@ RUN cd /tmp \
     && cmake --build build --target install \
     && cd /tmp/ \
     && rm -Rf eigen-git-mirror \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1  https://github.com/ginkgo-project/ginkgo.git \
-    && cd ginkgo \
-    && cmake -E make_directory build \
-    && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
-        -DGINKGO_BUILD_TESTS=OFF -DGINKGO_BUILD_EXAMPLES=OFF \
-        -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ \
-        -DGINKGO_DEVEL_TOOLS=OFF -DGINKGO_BUILD_REFERENCE=ON \
-        -DCMAKE_BUILD_TYPE=Release \
-    && cmake --build build --target all --clean-first > /dev/null 2>&1 \
-    && cmake --build build --target install \
-    && cd /tmp \
-    && rm -rf ginkgo \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
@@ -748,49 +802,6 @@ RUN cd /tmp \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-RUN echo -e '\033[36;1m ******* Below are commented section to investigate ******** \033[0m'
-
-ARG GST_VERSION=1.16.1
-
-# need libjpeg-dev
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone --depth=1 https://github.com/Motion-Project/motion.git \
-    && cd motion \
-    && autoreconf -fiv \
-    && ./configure --without-ffmpeg --prefix=/usr/local \
-    && make clean  \
-    && make \
-    && make install \
-    && cd /tmp \
-    && rm -fr motion \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-#  fatal error: QToolBar: No such file or directory ....
-# RUN cd /tmp \
-    # && TimePoint="$(date +%s)" \
-    # && git clone  --depth=1 git://git.linuxtv.org/v4l-utils.git \
-    # && cd v4l-utils \
-    # && autoreconf -vfi \
-    # && ./configure --prefix=/usr/local \
-    # && make \
-    # && make install \
-    # && cd /tmp/ \
-    # && rm -Rf v4l-utils \
-    # && TimePoint="$(($(date +%s)-TimePoint))" \
-    # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
-#Automated static analysis tools for binary programs
-RUN cd /tmp \
-    && TimePoint="$(date +%s)" \
-    && git clone  --depth=1 https://github.com/cmu-sei/pharos.git \
-    && cd pharos \
-    && cd /tmp/ \
-    # && rm -Rf pharos \
-    && TimePoint="$(($(date +%s)-TimePoint))" \
-    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
-
 RUN cd /tmp \
     && Time="$(date +%s)" \
     && git clone --depth=1 https://github.com/curl/curl.git \
@@ -818,6 +829,69 @@ RUN cd /tmp \
     && rm -Rf rapidjson rapidjson-build  \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
+
+RUN echo -e '\033[36;1m ******* Below are commented section to investigate ******** \033[0m'
+
+# need libjpeg-dev
+#RUN cd /tmp \
+#    && TimePoint="$(date +%s)" \
+#    && git clone --depth=1 https://github.com/Motion-Project/motion.git \
+#    && cd motion \
+#    && autoreconf -fiv \
+#    && ./configure --without-ffmpeg --prefix=/usr/local \
+#    && make clean  \
+#    && make \
+#    && make install \
+#    && cd /tmp \
+#    && rm -fr motion \
+#    && TimePoint="$(($(date +%s)-TimePoint))" \
+#    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+#  fatal error: QToolBar: No such file or directory ....
+# RUN cd /tmp \
+    # && TimePoint="$(date +%s)" \
+    # && git clone  --depth=1 git://git.linuxtv.org/v4l-utils.git \
+    # && cd v4l-utils \
+    # && autoreconf -vfi \
+    # && ./configure --prefix=/usr/local \
+    # && make \
+    # && make install \
+    # && cd /tmp/ \
+    # && rm -Rf v4l-utils \
+    # && TimePoint="$(($(date +%s)-TimePoint))" \
+    # && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+#RUN cd /tmp \
+#    && TimePoint="$(date +%s)" \
+#    && curl -L -O -k https://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz \
+#    && tar -xzf gsl-2.6.tar.gz \
+#    && cd gsl-2.6 \
+#    && ./autogen.sh \
+#    && ./configure --enable-maintainer-mode --prefix=/usr/local \
+#    && make -j$(nproc) > /dev/null 2>&1 \
+#    && make install \
+#	&& make clean && ldconfig \
+#    && cd /tmp \
+#    && rm -rf gsl-2.6.tar.gz gsl-2.6 \
+#    && TimePoint="$(($(date +%s)-TimePoint))" \
+#    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+#RUN cd /tmp \
+#    && TimePoint="$(date +%s)" \
+#    && git clone --depth=1  https://github.com/ginkgo-project/ginkgo.git \
+#    && cd ginkgo \
+#    && cmake -E make_directory build \
+#    && cmake -E chdir build cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
+#        -DGINKGO_BUILD_TESTS=OFF -DGINKGO_BUILD_EXAMPLES=OFF \
+#        -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ \
+#        -DGINKGO_DEVEL_TOOLS=OFF -DGINKGO_BUILD_REFERENCE=ON \
+#        -DCMAKE_BUILD_TYPE=Release \
+#    && cmake --build build --target all --clean-first > /dev/null 2>&1 \
+#    && cmake --build build --target install \
+#    && cd /tmp \
+#    && rm -rf ginkgo \
+#    && TimePoint="$(($(date +%s)-TimePoint))" \
+#    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 ####  installs unwante dependencies like boost1.67 ....
 # RUN apt-get -qq install --assume-yes --no-install-recommends \
@@ -1321,5 +1395,6 @@ RUN DEBIAN_FRONTEND=noninteractive  apt-get clean && \
     # bash
 
 RUN echo -e '\033[36;1m ******* CONTAINER START COMMAND ******** \033[0m'
+
 CMD ["/bin/bash"]
 

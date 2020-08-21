@@ -51,8 +51,9 @@ ARG EXTENDED_DDS_BUILD_SECURITY_OPTIONS="--security --safety-profile=base"
 ARG DDS_BUILD_DISSECT_OPTIONS="--qt --wireshark=/usr/local/"
 
 ARG DDS_BASE_DIR=/opt/dds
-# ARG DDS_INSTALL_DIR=/opt/dds
-ARG DDS_INSTALL_DIR=/usr/local/midleware
+
+ENV DDS_INSTALL_DIR=/opt/mdlwre
+#ARG DDS_INSTALL_DIR=/usr/local/midleware
 
 RUN cd /tmp \
     && rm -Rvf MPC \
@@ -64,10 +65,11 @@ RUN cd /tmp \
     && git clone --depth=1 --recurse-submodules https://github.com/objectcomputing/OpenDDS.git \
     && git clone --depth=1 https://github.com/omg-dds/dds-rtps.git \
     && git clone --depth=1 https://github.com/omg-dds/dds-xtypes.git \
-    && git clone --depth=1 https://github.com/omg-dds/dds-security.git \
-    && git clone --depth=1 https://github.com/RemedyIT/dancex11.git \
-    && git clone --depth=1 https://github.com/RemedyIT/taox11.git \
-    && git clone --depth=1 https://github.com/RemedyIT/ciaox11.git
+    && git clone --depth=1 https://github.com/omg-dds/dds-security.git
+
+#    && git clone --depth=1 https://github.com/RemedyIT/dancex11.git
+#    && git clone --depth=1 https://github.com/RemedyIT/taox11.git \
+#    && git clone --depth=1 https://github.com/RemedyIT/ciaox11.git
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
@@ -85,8 +87,8 @@ RUN cd /tmp \
     && export LD_LIBRARY_PATH=/tmp/OpenDDS/lib:/tmp/OpenDDS/build/target/lib:$ACE_ROOT/lib:$LD_LIBRARY_PATH \
     && export LD_LIBRARY_PATH=${XSC_ROOT}/XSC/utils:${XSC_ROOT}/lib:/usr/local/lib/:$LD_LIBRARY_PATH \
     #&& echo "#include \"ace/config-linux.h\"" >> $ACE_ROOT/ace/config.h \
-    && ./configure --prefix=/usr/local \
-    # && ./configure --prefix=/usr/local \
+#    && ./configure --prefix=/usr/local \
+    && ./configure --prefix=${DDS_INSTALL_DIR} \
  #           ${OPENDDS_BUILD_OPTIONS} \
             ${OPENDDS_BUILD_CONFIG_OPTIONS} \
             ${OPENDDS_SECURITY_OPTIONS} \
@@ -118,7 +120,7 @@ RUN cd /tmp \
             ### --configh="#define ACE_FACE_SAFETY_BASE" \
     && ./tools/scripts/show_build_config.pl \
     && make -j$(nproc) \
-    && make INSTALL_PREFIX=/usr/local install \
+    && make INSTALL_PREFIX=${DDS_INSTALL_DIR} install \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
@@ -133,7 +135,7 @@ RUN cd /tmp \
     && export DANCE_ROOT=/tmp/DAnCE \
 	&& $ACE_ROOT/bin/mwc.pl -type gnuace -workers $(nproc) DAnCE_TAO.mwc \
     && make -j$(nproc) \
-    && make INSTALL_PREFIX=/usr/local install \
+    && make INSTALL_PREFIX=${DDS_INSTALL_DIR} install \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
@@ -151,16 +153,34 @@ RUN cd /tmp \
     && export PATH="${PATH}:/tmp/ACE_TAO/ACE/bin:/tmp/ACE_TAO/TAO/bin:/usr/local/bin" \
 	&& $ACE_ROOT/bin/mwc.pl -type gnuace -workers $(nproc) CIAO_TAO_DAnCE_OpenDDS.mwc \
     && make -j$(nproc) \
-    && make INSTALL_PREFIX=/usr/local install \
+    && make INSTALL_PREFIX=${DDS_INSTALL_DIR} install \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
+
+RUN cd /tmp \
+    && TimePoint="$(date +%s)" \
+    && cd XSC \
+    && export MPC_ROOT=/tmp/MPC \
+    && export ACE_TAO_ROOT=/tmp/ACE_TAO \
+    && export ACE_ROOT=$ACE_TAO_ROOT/ACE \
+    && export TAO_ROOT=$ACE_TAO_ROOT/TAO \
+    && export CIAO_ROOT=/tmp/CIAO \
+    && export DANCE_ROOT=/tmp/DAnCE \
+    && export DDS_ROOT=/tmp/OpenDDS \
+	&& export XSC_ROOT=/tmp/XSC \
+    && export PATH="${PATH}:/tmp/ACE_TAO/ACE/bin:/tmp/ACE_TAO/TAO/bin:/usr/local/bin" \
+	&& $ACE_ROOT/bin/mwc.pl -type gnuace -workers $(nproc) XSC.mwc \
+    && make -j$(nproc) \
+    && make INSTALL_PREFIX=${DDS_INSTALL_DIR} install \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 ENV \
-    ACE_ROOT=/usr/local/share/ace \
-    CIAO_ROOT=/usr/local/share/ciao \
-    DANCE_ROOT=/usr/local/share/dance \
-    DDS_ROOT=/usr/local/share/dds \
-    TAO_ROOT=/usr/local/share/tao \
+    ACE_ROOT=${DDS_INSTALL_DIR}/share/ace \
+    CIAO_ROOT=${DDS_INSTALL_DIR}/share/ciao \
+    DANCE_ROOT=${DDS_INSTALL_DIR}/share/dance \
+    DDS_ROOT=${DDS_INSTALL_DIR}/share/dds \
+    TAO_ROOT=${DDS_INSTALL_DIR}/share/tao \
     SSL_ROOT=/usr/local \
     BOOST_ROOT=/usr/local \
     GLIB_ROOT=/usr \

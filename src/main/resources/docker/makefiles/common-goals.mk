@@ -42,7 +42,7 @@ DOCKER_LABEL        += --label org.label-schema.documentation=$(GIT_REPOS_URL)
 DOCKER_LABEL        += --label org.label-schema.release-date=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 BUILD_ARGS          = --build-arg MAKEFLAGS=$(DK_MKFALGS)
-BUILD_ARGS          += --build-arg DDS_BASE_IMAGE=$(BASE_IMAGE)
+BUILD_ARGS          += --build-arg BASE_IMAGE=$(BASE_IMAGE)
 BUILD_ARGS          += --build-arg ACCOUNT=$(DTR_NAMESPACE)
 
 #TTY_LOG             ?= "2>&1 | tee ${MODULE}_build_output.log"
