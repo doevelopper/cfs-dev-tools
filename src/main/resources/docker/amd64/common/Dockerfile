@@ -35,29 +35,6 @@ ARG no_proxy=$NOPROXY
 ARG HTTP_PROXY=$PROXY
 ARG HTTPS_PROXY=$PROXY
 ARG NO_PROXY=$NOPROXY
-ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.18}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.3}
-ARG MVN_VERSION=${MVN_VERSION:-3.6.3}
-ARG LLVM_VERSION=${LLVM_VERSION:-10.0.0}
-ARG GRADLE_VERSION=${GRADLE_VERSION:-6.6.1}
-ARG BAZEL_VERSION=${BAZEL_VERSION:-3.5.1}
-ARG BAZEL_TOOL_VERSION=${BAZEL_TOOL_VERSION:-3.5.0}
-ARG GST_VERSION=${GST_VERSION:-1.16.2}
-ARG BOOST_VERSION_MAJ=1
-ARG BOOST_VERSION_MIN=71
-ARG BOOST_VERSION_PATCH=0
-ARG BOOST_VERSION=${BOOST_VERSION_MAJ}.${BOOST_VERSION_MIN}.${BOOST_VERSION_PATCH}
-ARG BOOST_RELEASE=${BOOST_VERSION_MAJ}_${BOOST_VERSION_MIN}_${BOOST_VERSION_PATCH}
-ARG APR_VERSION=1.7.0
-ARG APU_VERSION=1.6.1
-ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.14}
-ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.2}
-ARG QTCREATOR_VERSION=${QTCREATOR_VERSION:-4.13.1}
-ARG QT_SHA_256=0cd82c80287a783bd5db1339b6184803d57517c9450ffe16f505254853f0a41f
-ARG T_MD5=c839aed9d551bdc8411a0a33e5ae46f3
-ARG GDB_VERSION=${GDB_VERSION:-9.2}
-ARG GRPC_RELEASE=${GRPC_RELEASE:-v1.32.0}
-ARG QWT_RELEASE=${QWT_RELEASE:-6.1.5}
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV LC_ALL C.UTF-8
@@ -111,6 +88,9 @@ RUN [ -n "$http_proxy" ] && printf "use_proxy=yes\nhttp_proxy=$http_proxy\nhttps
 
 RUN echo -e '\033[36;1m ******* Differents builds tools installation ******** \033[0m'
 
+ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.18}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.4}
+
 RUN cd /tmp \
     && Time="$(date +%s)" \
     && curl -L -O -k https://cmake.org/files/v${CMAKE_MAJOR_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
@@ -155,6 +135,7 @@ RUN  cd /tmp \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
+ARG MVN_VERSION=${MVN_VERSION:-3.6.3}
 RUN cd /tmp \
     && Time="$(date +%s)" \
     &&  wget --no-check-certificate \
@@ -165,6 +146,7 @@ RUN cd /tmp \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
+ARG GRADLE_VERSION=${GRADLE_VERSION:-6.6.1}
 RUN cd /tmp \
     && Time="$(date +%s)" \
     && curl -L -O -k https://downloads.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip \
@@ -183,6 +165,9 @@ ENV MAVEN_OPTS "-Dstyle.info=bold,green -Dstyle.project=bold,magenta -Dstyle.war
         -Dstyle.mojo=bold,cyan -Xmx1048m -Xms256m -XX:MaxPermSize=512M"
 ENV PATH $PATH:/opt/apache-maven/bin/:/opt/jdk1.8.0_261/bin:/opt/jdk1.8.0_261/jre/bin:/opt/cmake/bin
 ENV PATH $PATH:/opt/gradle/gradle-${GRADLE_VERSION}/bin
+
+ARG BAZEL_VERSION=${BAZEL_VERSION:-3.7.0}
+ARG BAZEL_TOOL_VERSION=${BAZEL_TOOL_VERSION:-3.5.0}
 
 RUN cd /tmp \
     && Time="$(date +%s)" \
@@ -235,6 +220,8 @@ RUN cd /tmp \
 
 RUN echo -e '\033[36;1m ******* Differnets QA tools installation ******** \033[0m'
 
+ARG LLVM_VERSION=${LLVM_VERSION:-10.0.0}
+
 #RUN cd /tmp \
 #    && TimePoint="$(date +%s)" \
 ##    && curl -L -O -k http://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-pc-linux-gnu.tar.xz \
@@ -255,19 +242,21 @@ RUN echo -e '\033[36;1m ******* Differnets QA tools installation ******** \033[0
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-   && curl -L -O -k https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0-rc4/clang+llvm-11.0.0-rc4-x86_64-linux-gnu-ubuntu-20.04.tar.xz \
-    && tar xvJf clang+llvm-11.0.0-rc4-x86_64-linux-gnu-ubuntu-20.04.tar.xz \
-    && mv -v clang+llvm-11.0.0-rc4-x86_64-linux-gnu-ubuntu-20.04 /opt/clang-llvm-11.0.0 \
-    && rm -Rvf clang+llvm-11.0.0-rc4-x86_64-linux-gnu-ubuntu-20.04.tar.xz \
+   && curl -L -O -k https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz \
+    && tar xvJf clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz \
+    && mv -v clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04 /opt/clang-llvm-11.0.0 \
+    && rm -Rvf clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 
 
-ENV PATH=${PATH}:/opt/clang-llvm-10.0.0/bin
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/clang-llvm-10.0.0/lib
+ENV PATH=${PATH}:/opt/clang-llvm-11.0.0/bin
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/clang-llvm-11.0.0/lib
 
+ARG GDB_VERSION=${GDB_VERSION:-9.2}
 # Build and transform stdout into . to reduce the noise
+
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
     && curl -L -O -k http://ftp.gnu.org/gnu/gdb/gdb-${GDB_VERSION}.tar.gz \
@@ -347,19 +336,17 @@ RUN cmake --version \
     && mvn --version \
     && gradle -v \
     && bazel version \
-    && conan --version || true
-
-RUN gdb --version \
+    && conan --version || true \
+    && gdb --version \
     && java -version \
+    && clang --version \
+    && clang-format --version \
+    && clang-tidy -version
     && gcc --version
 
 ENV PATH=${PATH}:/opt/clang-llvm-11.0.0/bin
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/clang-llvm-11.0.0/lib
 
-RUN cmake --version \
-    && clang --version \
-    && clang-format --version \
-    && clang-tidy -version
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
@@ -470,6 +457,12 @@ RUN cd /tmp \
 
 ENV MANPATH=${MANPATH}:/usr/local/man:/usr/local/share/man:/usr/share/man:/usr/man
 ENV MANPAGER=most
+
+ARG BOOST_VERSION_MAJ=1
+ARG BOOST_VERSION_MIN=71
+ARG BOOST_VERSION_PATCH=0
+ARG BOOST_VERSION=${BOOST_VERSION_MAJ}.${BOOST_VERSION_MIN}.${BOOST_VERSION_PATCH}
+ARG BOOST_RELEASE=${BOOST_VERSION_MAJ}_${BOOST_VERSION_MIN}_${BOOST_VERSION_PATCH}
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
@@ -582,6 +575,8 @@ RUN cd /tmp \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
+ARG APR_VERSION=1.7.0
+
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
     && curl -L -O -k https://www-us.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz  \
@@ -612,6 +607,7 @@ RUN cd /tmp \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
+ARG APU_VERSION=1.6.1
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
     && curl -L -O -k https://www-us.apache.org/dist//apr/apr-util-${APU_VERSION}.tar.gz  \
@@ -716,8 +712,15 @@ RUN cd /tmp \
    && TimePoint="$(($(date +%s)-TimePoint))" \
    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
+ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.14}
+ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.2}
+ARG QTCREATOR_VERSION=${QTCREATOR_VERSION:-4.13.1}
+ARG QT_SHA_256=0cd82c80287a783bd5db1339b6184803d57517c9450ffe16f505254853f0a41f
+ARG T_MD5=c839aed9d551bdc8411a0a33e5ae46f3
+
 # lists took from
 # https://download.qt.io/online/qtsdkrepository/linux_x64/desktop/qt5_5141/Updates.xml
+# https://download.qt.io/online/qtsdkrepository/linux_x64/desktop/qt6_600/Updates.xml
 
 RUN cd /tmp \
    && TimePoint="$(date +%s)" \
@@ -779,6 +782,7 @@ RUN cd /tmp \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
+ARG QWT_RELEASE=${QWT_RELEASE:-6.1.5}
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
     && curl -L -O -k https://freefr.dl.sourceforge.net/project/qwt/qwt/${QWT_RELEASE}/qwt-${QWT_RELEASE}.tar.bz2 \
@@ -879,6 +883,7 @@ RUN cd /tmp \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
+ARG GRPC_RELEASE=${GRPC_RELEASE:-v1.33.2}
 #RUN cd /tmp \
 #    && Time="$(date +%s)" \
 #    && git clone -b $(curl -L https://grpc.io/release) https://github.com/grpc/grpc \
@@ -889,6 +894,7 @@ RUN cd /tmp \
 #    && Time="$(($(date +%s)-Time))" \
 #    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
+ARG GST_VERSION=${GST_VERSION:-1.18.2}
 
 RUN echo -e '\033[36;1m ******* Below are commented section to investigate ******** \033[0m'
 

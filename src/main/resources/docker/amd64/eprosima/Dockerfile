@@ -25,6 +25,17 @@ ARG DDS_DEV_IMAGE=docker.io/doevelopper/cfs-dev-tools-common:0.0.1
 FROM $DDS_DEV_IMAGE
 
 USER root
+
+RUN cd /tmp \
+    && git clone  --depth=1 --recurse-submodules https://github.com/eProsima/Fast-CDR.git
+    && cd Fast-CDR \
+    && cmake -E make_directory Fast-CDR-build \
+    && cmake -E chdir Fast-CDR-build cmake -DCMAKE_BUILD_TYPE=Release .. \
+    && cmake --build Fast-CDR-build --target all --clean-first --parallel \
+    && cmake --build Fast-CDR-build --target install \
+    && cd /tmp \
+    && rm -rf Fast-CDR
+
 RUN cd /tmp \
     && git clone --depth=1 --recurse-submodules https://github.com/foonathan/memory.git \
     && cd memory \
@@ -40,27 +51,27 @@ RUN cd /tmp \
 ENV OPENSSL_ROOT_DIR  /usr/local
 
 RUN cd /tmp \
-    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Fast-RTPS.git \
-    && cd Fast-RTPS \
-    && cmake -E make_directory build \
-    && cmake -E chdir build cmake .. -DSECURITY=ON -DPERFORMANCE_TESTS=ON  \
+    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Fast-DDS.git \
+    && cd Fast-DDS \
+    && cmake -E make_directory Fast-DDS-build \
+    && cmake -E chdir Fast-DDS-build cmake .. -DSECURITY=ON -DPERFORMANCE_TESTS=ON  \
         -DTHIRDPARTY=ON -DBUILD_JAVA=ON -DPERFORMANCE_TESTS=ON \
         -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    && cmake --build build --target all --clean-first \
-    && cmake --build build --target install \
+    && cmake --build Fast-DDS-build --target all --clean-first \
+    && cmake --build Fast-DDS-build --target install \
     && cd /tmp \
-    && rm -rf Fast-RTPS
+    && rm -rf Fast-DDS
 
 RUN cd /tmp \
-    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Fast-RTPS-Gen.git \
-    && cd Fast-RTPS-Gen \
+    && git clone --depth=1 --recurse-submodules https://github.com/eProsima/Fast-DDS-Gen.git \
+    && cd Fast-DDS-Gen \
     && gradle assemble \
 #    && cp -v share/fastrtps/fastrtpsgen.jar  /opt/cmake/bin/ \
     && cp -v build/libs/fastrtpsgen.jar  /opt/cmake/bin/ \
     && cd /tmp/ \
     && java -jar /opt/cmake/bin/fastrtpsgen.jar -version \
-    && rm -Rvf Fast-RTPS-Gen \
+    && rm -Rvf Fast-DDS-Gen
 
 #RUN cd /tmp \
 #    && TimePoint="$(date +%s)" \
