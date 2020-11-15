@@ -45,22 +45,21 @@ RUN curl -k -L https://github.com/docker/compose/releases/download/1.27.4/docker
     && docker-compose --version
 
 
-# # Install Kubectl
-# Note: Latest version of kubectl may be found at:
-# https://aur.archlinux.org/packages/kubectl-bin/
+# # # Install Kubectl
+# # Note: Latest version of kubectl may be found at:
+# # https://aur.archlinux.org/packages/kubectl-bin/
 ENV KUBE_LATEST_VERSION="v1.15.0"
 RUN \
     curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
     && chmod +x ./kubectl \
     && mv ./kubectl /usr/local/bin/kubectl
 
-# # Install helm
-# Note: Latest version of helm may be found at:
-# https://github.com/kubernetes/helm/releases
+# # # Install helm
+# # Note: Latest version of helm may be found at:
+# # https://github.com/kubernetes/helm/releases
 ENV HELM_VERSION="v3.4.0"
 RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
-
 
 RUN \
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
@@ -68,20 +67,21 @@ RUN \
     && ./aws/install
 
 RUN \
-    wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
-    && chmod +x /usr/local/bin/helm
+    curl --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp \
+    && mv /tmp/eksctl /usr/local/bin
 
-RUN \
-    curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp \
-    mv /tmp/eksctl /usr/local/bin
+# # Install doctl
+RUN curl --location https://github.com/digitalocean/doctl/releases/download/v1.52.0/doctl-1.52.0-linux-amd64.tar.gz | tar xz -C /tmp \
+    && mv /tmp/doctl /usr/local/bin
 
 RUN docker version || true \
-    && docker-compose version \
-    && helm version --client \
-    && helm help \
+    && docker-compose version || true \
+    && helm version --client || true \
+    && helm help || true \
     && kubectl version || true \
-    && aws --version \
-    && eksctl version
+    && aws --version || true \
+    && eksctl version || true \
+    && doctl version
 
 CMD ["/bin/bash"]
 
