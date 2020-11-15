@@ -23,12 +23,12 @@ jobs:
           DOCKER_NS: ${{ secrets.DTR_NAMESPACE }}
           DOCKER_TRUSTED_REGISTRY: docker.io
         run: |
-          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+          echo "${DOCKER_PASSWORD}" | docker login -u "${DTR_NAMESPACE}" --password-stdin ${DOCKER_TRUSTED_REGISTRY}
 
       - name: Build and push custom dind + aws-cli, ekctl, docker-compose, helm, kubectl
-        run: make CI_VERSION=0.0.2 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10  dind
+        run: make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10  dind
 
       - name: docker push all images generated
         run: |
-          make CI_VERSION=0.0.2 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10 image-info
-          make CI_VERSION=0.0.2 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10 versioninfo
+          make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10 image-info
+          make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10 versioninfo
