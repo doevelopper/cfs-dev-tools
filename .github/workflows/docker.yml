@@ -23,7 +23,8 @@ jobs:
           DOCKER_NS: ${{ secrets.DTR_NAMESPACE }}
           DOCKER_TRUSTED_REGISTRY: docker.io
         run: |
-          echo "${DOCKER_PASSWORD}" | docker login -u "${DTR_NAMESPACE}" --password-stdin ${DOCKER_TRUSTED_REGISTRY}
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+          docker version
 
       - name: Build and push custom dind + aws-cli, ekctl, docker-compose, helm, kubectl
         run: make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10  dind
