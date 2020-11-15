@@ -25,7 +25,7 @@
 
 CONTAINER_IMAGE      = ${APP_BASE_IMAGE_NAME}-$(shell basename $(CURDIR))
 
-DOCKER_LABEL        := --label org.label-schema.title="Dind docker-compose make git"
+DOCKER_LABEL        := --label org.label-schema.title="Dind docker-compose make git aws ekctl"
 DOCKER_LABEL        += --label org.label-schema.description="Docker in docker for running container usin CI"
 DOCKER_LABEL        += --label org.label-schema.name=$(CONTAINER_IMAGE)
 DOCKER_LABEL        += --label org.label-schema.schema-version="$(CONTAINER_IMAGE):$(SEM_VERSION)"

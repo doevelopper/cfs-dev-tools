@@ -37,7 +37,7 @@ export APP_BASE_IMAGE_NAME      := ${DOCKER_TRUSTED_REGISTRY}/${DTR_NAMESPACE}/$
 
 ifneq ($(DOCKER_TRUSTED_REGISTRY),)
     ifneq ($(ARCH),)
-        BASE_IMAGE              := $(ARCH)/ubuntu:19.10
+        BASE_IMAGE              := $(ARCH)/ubuntu:20.04
         ifeq ($(PLATFORM),RTI)
             BASE_IMAGE          := $(ARCH)/ubuntu:18.04
         endif

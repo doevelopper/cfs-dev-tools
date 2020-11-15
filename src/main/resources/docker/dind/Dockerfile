@@ -29,7 +29,7 @@ ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 
 RUN apt-get update \
-    && apt-get install curl git make wget locales git-flow\
+    && apt-get install curl git make wget unzip locales git-flow\
         software-properties-common apt-transport-https ca-certificates \
         gnupg2 lsb-release --assume-yes \
     && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
@@ -40,7 +40,7 @@ RUN apt-get update \
     && apt-get clean --assume-yes \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -k -L https://github.com/docker/compose/releases/download/1.26.0-rc4/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
+RUN curl -k -L https://github.com/docker/compose/releases/download/1.27.4/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/docker-compose \
     && docker-compose --version
 
@@ -57,15 +57,31 @@ RUN \
 # # Install helm
 # Note: Latest version of helm may be found at:
 # https://github.com/kubernetes/helm/releases
-ENV HELM_VERSION="v3.2.1"
+ENV HELM_VERSION="v3.4.0"
 RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
+
+
+RUN \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip  \
+    && ./aws/install
+
+RUN \
+    wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
+    && chmod +x /usr/local/bin/helm
+
+RUN \
+    curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp \
+    mv /tmp/eksctl /usr/local/bin
 
 RUN docker version || true \
     && docker-compose version \
     && helm version --client \
     && helm help \
-    && kubectl version || true
+    && kubectl version || true \
+    && aws --version \
+    && eksctl version
 
 CMD ["/bin/bash"]
 

@@ -1,0 +1,34 @@
+
+name: CFS core plateform SDLC docker images
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v2
+      - name: docker.io login
+        env:
+          DOCKER_USER: ${{ secrets.DTR_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DTR_PASSWORD }}
+          DOCKER_NS: ${{ secrets.DTR_NAMESPACE }}
+          DOCKER_TRUSTED_REGISTRY: docker.io
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+
+      - name: Build and push custom dind + aws-cli, ekctl, docker-compose, helm, kubectl
+        run: make CI_VERSION=0.0.2 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10  dind
+
+      - name: docker push all images generated
+        run: |
+          make CI_VERSION=0.0.2 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10 image-info
+          make CI_VERSION=0.0.2 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10 versioninfo
