@@ -27,8 +27,8 @@ jobs:
         run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
           docker version
-          apt-get update
-          apt-get install make
+          sudo apt-get update
+          sudo apt-get install make
 
       - name: Build and push custom dind + aws-cli, ekctl, docker-compose, helm, kubectl
         run: make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10  dind
