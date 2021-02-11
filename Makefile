@@ -55,5 +55,5 @@ include $(shell pwd -P)/src/main/resources/docker/makefiles/target-coordinator.m
 # make CI_VERSION=0.0.2 BASE_IMAGE=amd64/ubuntu:19.10  dind
 # make DOCKER_TRUSTED_REGISTRY=docker.io DTR_NAMESPACE=doevelopper ARCH=amd64 GOAL=build PLATFORM=RTI  rti-connext-dds
 # make DOCKER_TRUSTED_REGISTRY=docker.io DTR_NAMESPACE=doevelopper ARCH=amd64 GOAL=build omg-opendds
-# make CI_VERSION=0.0.2 BASE_IMAGE=amd64/ubuntu:19.10  DOCKER_TRUSTED_REGISTRY=docker.io DTR_NAMESPACE=doevelopper ARCH=amd64 GOAL=build PLATFORM=RTI  rti-connext-dds
-#
+# make CI_VERSION=0.0.2 BASE_IMAGE=amd64/ubuntu:19.10 DOCKER_TRUSTED_REGISTRY=docker.io DTR_NAMESPACE=doevelopper ARCH=amd64 GOAL=build PLATFORM=RTI  rti-connext-dds
+# make CI_VERSION=0.0.5 BASE_IMAGE=amd64/ubuntu:20.10 DOCKER_TRUSTED_REGISTRY=docker.io DTR_NAMESPACE=doevelopper ARCH=amd64 GOAL=build common-base

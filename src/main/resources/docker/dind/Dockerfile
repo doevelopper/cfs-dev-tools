@@ -31,7 +31,7 @@ ENV LANG C.UTF-8
 RUN apt-get update \
     && apt-get install curl git make wget unzip locales git-flow\
         software-properties-common apt-transport-https ca-certificates \
-        gnupg2 lsb-release --assume-yes \
+        gnupg2 lsb-release python3-pip python3-dev python3-wheel cython3 python3-setuptools --assume-yes \
     && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
     && add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" \
     && apt-get update \
@@ -40,7 +40,13 @@ RUN apt-get update \
     && apt-get clean --assume-yes \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -k -L https://github.com/docker/compose/releases/download/1.27.4/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && pip3 install --upgrade pip \
+    && pip3 install molecule \
+    && pip3 install ansible
+
+RUN curl -k -L https://github.com/docker/compose/releases/download/1.28.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/docker-compose \
     && docker-compose --version
 
@@ -57,21 +63,22 @@ RUN \
 # # # Install helm
 # # Note: Latest version of helm may be found at:
 # # https://github.com/kubernetes/helm/releases
-ENV HELM_VERSION="v3.4.0"
+ENV HELM_VERSION="v3.5.1"
 RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
 
 RUN \
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip  \
-    && ./aws/install
+    && ./aws/install \
+    && rm -Rvf awscliv2.zip
 
 RUN \
     curl --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp \
     && mv /tmp/eksctl /usr/local/bin
 
 # # Install doctl
-RUN curl --location https://github.com/digitalocean/doctl/releases/download/v1.52.0/doctl-1.52.0-linux-amd64.tar.gz | tar xz -C /tmp \
+RUN curl --location https://github.com/digitalocean/doctl/releases/download/v1.55.0/doctl-1.55.0-linux-amd64.tar.gz | tar xz -C /tmp \
     && mv /tmp/doctl /usr/local/bin
 
 RUN docker version || true \

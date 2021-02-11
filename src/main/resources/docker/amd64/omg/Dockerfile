@@ -101,7 +101,7 @@ RUN cd /tmp \
             --ace=$ACE_ROOT \
             --tao=$TAO_ROOT \
             --mpc=$MPC_ROOT \
-            --qt=/opt/Qt/5.14.2/gcc_64 \
+            --qt=/opt/Qt/5.15.1/gcc_64 \
             --std=c++11 --ipv6 \
             --openssl=/usr/local \
             --xerces3=/usr/local \
