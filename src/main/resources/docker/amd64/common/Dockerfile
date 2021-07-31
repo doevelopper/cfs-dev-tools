@@ -88,15 +88,16 @@ RUN [ -n "$http_proxy" ] && printf "use_proxy=yes\nhttp_proxy=$http_proxy\nhttps
 
 RUN echo -e '\033[36;1m ******* Differents builds tools installation ******** \033[0m'
 
-ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.19}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.4}
+ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.21}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.1}
+#    && curl -L -O -k https://cmake.org/files/v${CMAKE_MAJOR_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
 
 RUN cd /tmp \
     && Time="$(date +%s)" \
-    && curl -L -O -k https://cmake.org/files/v${CMAKE_MAJOR_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
-    && tar -xvf cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz > /dev/null \
-    && rm -v cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
-    && mv -v cmake-${CMAKE_VERSION}-Linux-x86_64 /opt/cmake \
+    && curl -L -O -k https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz \
+    && tar -xvf cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz > /dev/null \
+    && rm -v cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz \
+    && mv -v cmake-${CMAKE_VERSION}-linux-x86_64 /opt/cmake \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
@@ -118,9 +119,9 @@ RUN  cd /tmp \
 #    && curl -L -O -k https://github.com/frekele/oracle-java/releases/download/8u212-b10/jdk-8u212-linux-x64.tar.gz \
 #    && tar -xzf jdk-8u212-linux-x64.tar.gz -C /opt/ \
 #    && rm jdk-8u212-linux-x64.tar.gz \
-    && curl -L -O -k https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u281-linux-x64.tar.gz \
-    && tar -xzf jdk-8u281-linux-x64.tar.gz -C /opt/ \
-    && rm jdk-8u281-linux-x64.tar.gz \
+    && curl -L -O -k https://enos.itcollege.ee/~jpoial/allalaadimised/jdk8/jdk-8u291-linux-x64.tar.gz \
+    && tar -xzf jdk-8u291-linux-x64.tar.gz -C /opt/ \
+    && rm jdk-8u291-linux-x64.tar.gz \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
@@ -135,7 +136,7 @@ RUN  cd /tmp \
 #     && Time="$(($(date +%s)-Time))" \
 #     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
-ARG MVN_VERSION=${MVN_VERSION:-3.6.3}
+ARG MVN_VERSION=${MVN_VERSION:-3.8.1}
 RUN cd /tmp \
     && Time="$(date +%s)" \
     &&  wget --no-check-certificate \
@@ -146,7 +147,7 @@ RUN cd /tmp \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
-ARG GRADLE_VERSION=${GRADLE_VERSION:-6.7}
+ARG GRADLE_VERSION=${GRADLE_VERSION:-7.1.1}
 RUN cd /tmp \
     && Time="$(date +%s)" \
     && curl -L -O -k https://downloads.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip \
@@ -157,17 +158,17 @@ RUN cd /tmp \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
-ENV JAVA_HOME /opt/jdk1.8.0_281
-ENV JRE_HOME /opt/jdk1.8.0_281/jre
+ENV JAVA_HOME /opt/jdk1.8.0_291
+ENV JRE_HOME /opt/jdk1.8.0_291/jre
 ENV M2_HOME /opt/apache-maven/
 ENV M2 $M2_HOME/bin
 ENV MAVEN_OPTS "-Dstyle.info=bold,green -Dstyle.project=bold,magenta -Dstyle.warning=bold,yellow \
         -Dstyle.mojo=bold,cyan -Xmx1048m -Xms256m -XX:MaxPermSize=512M"
-ENV PATH $PATH:/opt/apache-maven/bin/:/opt/jdk1.8.0_281/bin:/opt/jdk1.8.0_281/jre/bin:/opt/cmake/bin
+ENV PATH $PATH:/opt/apache-maven/bin/:/opt/jdk1.8.0_291/bin:/opt/jdk1.8.0_291/jre/bin:/opt/cmake/bin
 ENV PATH $PATH:/opt/gradle/gradle-${GRADLE_VERSION}/bin
 
-ARG BAZEL_VERSION=${BAZEL_VERSION:-4.0.0}
-ARG BAZEL_TOOL_VERSION=${BAZEL_TOOL_VERSION:-3.5.0}
+ARG BAZEL_VERSION=${BAZEL_VERSION:-4.1.0}
+ARG BAZEL_TOOL_VERSION=${BAZEL_TOOL_VERSION:-4.0.1}
 
 RUN cd /tmp \
     && Time="$(date +%s)" \
@@ -180,12 +181,20 @@ RUN cd /tmp \
 
 RUN cd /tmp \
     && Time="$(date +%s)" \
-    && curl -L -O -k https://github.com/bazelbuild/buildtools/releases/download/${BAZEL_TOOL_VERSION}/buildifier \
-    && chmod 744 buildifier && mv -v buildifier /usr/bin/ \
-    && curl -L -O -k https://github.com/bazelbuild/buildtools/releases/download/${BAZEL_TOOL_VERSION}/buildozer \
-    && chmod 744 buildozer && mv -v buildozer /usr/bin/ \
-    && curl -L -O -k https://github.com/bazelbuild/buildtools/releases/download/${BAZEL_TOOL_VERSION}/unused_deps \
-    && chmod 744 unused_deps && mv -v  unused_deps /usr/bin/ \
+    && curl -L -O -k https://github.com/bazelbuild/buildtools/releases/download/${BAZEL_TOOL_VERSION}/buildifier-linux-amd64 \
+    && chmod 744 buildifier-linux-amd64 && mv -v buildifier-linux-amd64 /usr/bin/buildifier \
+    && curl -L -O -k https://github.com/bazelbuild/buildtools/releases/download/${BAZEL_TOOL_VERSION}/buildozer-linux-amd64 \
+    && chmod 744 buildozer-linux-amd64 && mv -v buildozer-linux-amd64 /usr/bin/buildozer \
+    && curl -L -O -k https://github.com/bazelbuild/buildtools/releases/download/${BAZEL_TOOL_VERSION}/unused_deps-linux-amd64 \
+    && chmod 744 unused_deps-linux-amd64 && mv -v  unused_deps-linux-amd64 /usr/bin/unused_deps \
+    && Time="$(($(date +%s)-Time))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
+
+ARG BAZELISK_VERSION=${BAZELISK_VERSION:-1.10.1}
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && curl -L -O -k https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-amd64 \
+    && chmod 744 bazelisk-linux-amd64 && mv -v bazelisk-linux-amd64 /usr/bin/bazelisk \
     && Time="$(($(date +%s)-Time))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((Time/86400))" "$((Time/3600%24))" "$((Time/60%60))" "$((Time%60))"
 
@@ -220,7 +229,7 @@ RUN cd /tmp \
 
 RUN echo -e '\033[36;1m ******* Differnets QA tools installation ******** \033[0m'
 
-ARG LLVM_VERSION=${LLVM_VERSION:-11.0.1}
+ARG LLVM_VERSION=${LLVM_VERSION:-12.0.1}
 
 #RUN cd /tmp \
 #    && TimePoint="$(date +%s)" \
@@ -254,7 +263,7 @@ RUN cd /tmp \
 ENV PATH=${PATH}:/opt/clang-llvm-11.0.1/bin
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/clang-llvm-11.0.1/lib
 
-ARG GDB_VERSION=${GDB_VERSION:-10.1}
+ARG GDB_VERSION=${GDB_VERSION:-10.2}
 # Build and transform stdout into . to reduce the noise
 
 RUN cd /tmp \
@@ -459,19 +468,20 @@ ENV MANPATH=${MANPATH}:/usr/local/man:/usr/local/share/man:/usr/share/man:/usr/m
 ENV MANPAGER=most
 
 ARG BOOST_VERSION_MAJ=1
-ARG BOOST_VERSION_MIN=71
+ARG BOOST_VERSION_MIN=76
 ARG BOOST_VERSION_PATCH=0
 ARG BOOST_VERSION=${BOOST_VERSION_MAJ}.${BOOST_VERSION_MIN}.${BOOST_VERSION_PATCH}
 ARG BOOST_RELEASE=${BOOST_VERSION_MAJ}_${BOOST_VERSION_MIN}_${BOOST_VERSION_PATCH}
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -L -O -k https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_RELEASE}.tar.gz \
+#    && curl -L -O -k https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_RELEASE}.tar.gz \
+    && curl -L -O -k https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_RELEASE}.tar.gz \
     && tar xzf boost_${BOOST_RELEASE}.tar.gz \
     && cd boost_${BOOST_RELEASE} \
     && ./bootstrap.sh --prefix=/usr/local --with-python=python3 \
     && ./b2 --help \
-    && ./b2 link=shared threading=multi variant=release address-model=64 --build-dir=/tmp/boost-build cxxflags=-fPIC cxxstd=14  > /dev/null 2>&1 \
+    && ./b2 link=shared threading=multi variant=release address-model=64 --build-dir=/tmp/boost-build cxxflags=-fPIC cxxstd=17 > /dev/null 2>&1 \
     && ./b2 install --prefix=/usr/local > /dev/null 2>&1 \
     && cd /tmp \
     && rm -rf boost_${BOOST_RELEASE} boost_${BOOST_RELEASE}.tar.gz boost-build \
@@ -559,7 +569,7 @@ RUN cd /tmp \
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -L -O -k http://www-us.apache.org/dist//xerces/c/3/sources/xerces-c-3.2.3.tar.gz \
+    && curl -L -O -k https://mirror.ibcp.fr/pub/apache//xerces/c/3/sources/xerces-c-3.2.3.tar.gz \
     && tar -xzf xerces-c-3.2.3.tar.gz \
     && cd xerces-c-3.2.3/ \
     && ./configure --prefix=/usr/local \
@@ -580,7 +590,7 @@ ARG APR_VERSION=1.7.0
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -L -O -k https://www-us.apache.org/dist/apr/apr-${APR_VERSION}.tar.gz  \
+    && curl -L -O -k https://downloads.apache.org/apr/apr-${APR_VERSION}.tar.gz \
     && tar -xzf apr-${APR_VERSION}.tar.gz \
     && cd apr-${APR_VERSION} \
     && ./configure --prefix=/usr/local --enable-threads --enable-posix-shm \
@@ -611,7 +621,7 @@ RUN cd /tmp \
 ARG APU_VERSION=1.6.1
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -L -O -k https://www-us.apache.org/dist//apr/apr-util-${APU_VERSION}.tar.gz  \
+    && curl -L -O -k https://miroir.univ-lorraine.fr/apache//apr/apr-util-${APU_VERSION}.tar.gz \
     && tar -xzf apr-util-${APU_VERSION}.tar.gz  \
     && cd apr-util-${APU_VERSION} \
     && ./configure --prefix=/usr/local --with-apr=/usr/local --with-expat=/usr/local  \
@@ -641,20 +651,27 @@ RUN cd /tmp \
 #    && TimePoint="$(($(date +%s)-TimePoint))" \
 #    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
+ARG LOG4CXX_VERSION=${LOG4CXX_VERSION:-0.12.0}
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -L -O -k https://archive.apache.org/dist/logging/log4cxx/0.11.0/apache-log4cxx-0.11.0.tar.gz \
-    && tar -xzf apache-log4cxx-0.11.0.tar.gz \
-    && cd apache-log4cxx-0.11.0 \
-    && ./autogen.sh \
-    && ./configure --prefix=/usr/local --with-apr=/usr/local --with-apr-util=/usr/local \
-            --enable-char --enable-wchar_t --with-charset=utf-8 --with-logchar=utf-8  --with-logchar=wchar_t \
-    && make clean > /dev/null 2>&1 \
-    && make \
-    && make install \
-    && make clean && ldconfig \
+    && curl -L -O -k https://archive.apache.org/dist/logging/log4cxx/${LOG4CXX_VERSION}/apache-log4cxx-${LOG4CXX_VERSION}.tar.gz \
+    && tar -xzf apache-log4cxx-${LOG4CXX_VERSION}.tar.gz \
+    && cd apache-log4cxx-${LOG4CXX_VERSION} \
+#    && ./autogen.sh \
+#    && ./configure --prefix=/usr/local --with-apr=/usr/local --with-apr-util=/usr/local \
+#            --enable-char --enable-wchar_t --with-charset=utf-8 --with-logchar=utf-8  --with-logchar=wchar_t \
+#    && make clean > /dev/null 2>&1 \
+#    && make \
+#    && make install \
+#    && make clean && ldconfig \
+
+# elfutils vtable-dumper universal-ctags are missing ==> -DLOG4CXX_ABI_CHECK=OFF
+    && cmake -E make_directory log4cxx-build \
+    && cmake -E chdir log4cxx-build cmake -DLOG4CXX_ABI_CHECK=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-Og" -DBUILD_TESTING=off -DCMAKE_INSTALL_PREFIX=/usr/local .. \
+    && cmake --build log4cxx-build --target all --clean-first \
+    && cmake --build log4cxx-build --target install \
     && cd /tmp \
-    && rm -rvf  apache-log4cxx-0.11.0 apache-log4cxx-0.11.0.tar.gz \
+    && rm -rvf  apache-log4cxx-${LOG4CXX_VERSION} apache-log4cxx-${LOG4CXX_VERSION}.tar.gz \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
@@ -705,7 +722,7 @@ COPY qt-installer-script.qs install-qt.sh  /tmp/
 
 COPY install-qt.sh install-qt.sh
 
-ARG QTCREATOR_VERSION=${QTCREATOR_VERSION:-4.14.0}
+ARG QTCREATOR_VERSION=${QTCREATOR_VERSION:-4.15.2}
 
 RUN cd /tmp \
    && TimePoint="$(date +%s)" \
@@ -714,7 +731,7 @@ RUN cd /tmp \
    && TimePoint="$(($(date +%s)-TimePoint))" \
    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-5.15}
+ARG Q_MAJOR_VERSION=${Q_MAJOR_VERSION:-6.1}
 ARG Q_VERSION=${Q_VERSION:-${Q_MAJOR_VERSION}.2}
 
 ARG QT_SHA_256=0cd82c80287a783bd5db1339b6184803d57517c9450ffe16f505254853f0a41f
@@ -727,14 +744,15 @@ ARG T_MD5=c839aed9d551bdc8411a0a33e5ae46f3
 RUN cd /tmp \
    && TimePoint="$(date +%s)" \
    && ./install-qt.sh --directory /opt/Qt --host linux_x64 --target desktop --toolchain gcc_64 --version ${Q_VERSION} \
-		qtbase qtconnectivity qtx11extras qtwebchannel qtmultimedia qttranslations qtgraphicaleffects qtsvg qtdeclarative \
-		qtwebsockets qtimageformats qttools qtxmlpatterns qtsensors qtserialport qtlocation\
-		qtquickcontrols qtquickcontrols2 qt3d qtwebview qtserialbus qtscxml qtgamepad qtspeech qtcharts qtdatavis3d qtpurchasing\
-		qtvirtualkeyboard  qtwebengine qtnetworkauth qtwebglplugin qtlottie qtquick3d qtquicktimeline \
-		qtremoteobjects icu qtscript \
+		qtbase qtdeclarative qttools \
    && TimePoint="$(($(date +%s)-TimePoint))" \
    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
+#        qtconnectivity qtx11extras qtwebchannel qtmultimedia qttranslations qtgraphicaleffects qtsvg qtdeclarative \
+#		qtwebsockets qtimageformats qttools qtxmlpatterns qtsensors qtserialport qtlocation\
+#		qtquickcontrols qtquickcontrols2 qt3d qtwebview qtserialbus qtscxml qtgamepad qtspeech qtcharts qtdatavis3d qtpurchasing\
+#		qtvirtualkeyboard  qtwebengine qtnetworkauth qtwebglplugin qtlottie qtquick3d qtquicktimeline \
+#		qtremoteobjects icu qtscript \
 #qtactiveqt qtwinextras qtcanvas3d  d3dcompiler_47 opengl32sw
 
 # RUN cd /tmp \
@@ -779,7 +797,7 @@ ENV PKG_CONFIG_PATH=${QTDIR}/lib/pkgconfig:$PKG_CONFIG_PATH
 
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -sL https://deb.nodesource.com/setup_15.x | bash - \
+    && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
     && apt-get -qq install --assume-yes --no-install-recommends nodejs \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
@@ -787,15 +805,15 @@ RUN cd /tmp \
 ARG QWT_RELEASE=${QWT_RELEASE:-6.1.5}
 RUN cd /tmp \
     && TimePoint="$(date +%s)" \
-    && curl -L -O -k https://freefr.dl.sourceforge.net/project/qwt/qwt/${QWT_RELEASE}/qwt-${QWT_RELEASE}.tar.bz2 \
-    && tar xjvf qwt-${QWT_RELEASE}.tar.bz2 \
-    && cd qwt-${QWT_RELEASE} \
-    && qmake qwt.pro \
-    && make > /dev/null 2>&1 \
-    && make install DESTDIR=/usr/local \
-	&& make clean && ldconfig \
-    && cd /tmp \
-    && rm -rf qwt-${QWT_RELEASE}.tar.bz2 qwt-${QWT_RELEASE} \
+#    && curl -L -O -k https://freefr.dl.sourceforge.net/project/qwt/qwt/${QWT_RELEASE}/qwt-${QWT_RELEASE}.tar.bz2 \
+#    && tar xjvf qwt-${QWT_RELEASE}.tar.bz2 \
+#    && cd qwt-${QWT_RELEASE} \
+#    && qmake qwt.pro \
+#    && make > /dev/null 2>&1 \
+#    && make install DESTDIR=/usr/local \
+#	&& make clean && ldconfig \
+#    && cd /tmp \
+#    && rm -rf qwt-${QWT_RELEASE}.tar.bz2 qwt-${QWT_RELEASE} \
     && TimePoint="$(($(date +%s)-TimePoint))" \
     && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
