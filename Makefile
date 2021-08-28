@@ -23,6 +23,11 @@
 #        OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 #
 
+# Assume we have GNU make, but check version.
+ifeq ($(strip $(foreach v, 3.81% 3.82% 4.%, $(filter $v, $(MAKE_VERSION)))), )
+  $(error This version of GNU Make is too low ($(MAKE_VERSION)). Check your path, or upgrade to 3.81 or newer.)
+endif
+
 export PROJECT_NAME             ?= $(shell basename $(CURDIR))
 export DTR_NAMESPACE            ?= doevelopper
 #  jfrog.io - docker.io -
