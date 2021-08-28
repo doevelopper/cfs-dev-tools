@@ -13,22 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: docker.io login
-      env:
-        DOCKER_USER: ${{ secrets.DTR_USER }}
-        DOCKER_PASSWORD: ${{ secrets.DTR_PASSWORD }}
-        DOCKER_NS: ${{ secrets.DTR_NAMESPACE }}
-        DOCKER_TRUSTED_REGISTRY: docker.io
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: |
-        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin docker.io
-        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-        docker version
-        sudo apt-get update
-        sudo apt-get install make git
+    - name: Login to DockerHub Registry
+      run: echo ${{ secrets.DTR_PASSWORD }} | docker login -u ${{ secrets.DTR_USER }} --password-stdin
+      
+    # - name: docker.io login
+    #   env:
+    #     DOCKER_USER: ${{ secrets.DTR_USER }}
+    #     DOCKER_PASSWORD: ${{ secrets.DTR_PASSWORD }}
+    #     DOCKER_NS: ${{ secrets.DTR_NAMESPACE }}
+    #     DOCKER_TRUSTED_REGISTRY: docker.io
+    #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #   run: |
+    #     echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin docker.io
+    #     docker version
+    #     sudo apt-get update
+    #     sudo apt-get install make git
 
     # - name: Build and push custom dind + aws-cli, ekctl, docker-compose, helm, kubectl
+        # docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     #   run: make CI_VERSION=0.0.1 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:20.10  dind
 
     # - name: docker push all images generated
