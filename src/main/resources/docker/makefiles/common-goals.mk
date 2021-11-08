@@ -97,7 +97,7 @@ build-image:
 	$(Q) echo "Build of $(BUILDER_FQIN):$(SEM_VERSION) finished."
 
 .PHONY: push
- push: push-image ## Push docker image to DTR.
+push: push-image ## Push docker image to DTR.
 
 .PHONY: push-image
 push-image:

@@ -89,7 +89,7 @@ RUN [ -n "$http_proxy" ] && printf "use_proxy=yes\nhttp_proxy=$http_proxy\nhttps
 RUN echo -e '\033[36;1m ******* Differents builds tools installation ******** \033[0m'
 
 ARG CMAKE_MAJOR_VERSION=${CMAKE_MAJOR_VERSION:-3.21}
-ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.2}
+ARG CMAKE_VERSION=${CMAKE_VERSION:-${CMAKE_MAJOR_VERSION}.3}
 #    && curl -L -O -k https://cmake.org/files/v${CMAKE_MAJOR_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
 
 RUN cd /tmp \
@@ -170,7 +170,7 @@ ENV PATH $PATH:/opt/apache-maven/bin/:/opt/jdk1.8.0_${JDK_8_VERSION}/bin:/opt/jd
 ENV PATH $PATH:/opt/gradle/gradle-${GRADLE_VERSION}/bin
 
 ARG BAZEL_VERSION=${BAZEL_VERSION:-4.2.0}
-ARG BAZEL_TOOL_VERSION=${BAZEL_TOOL_VERSION:-4.0.1}
+ARG BAZEL_TOOL_VERSION=${BAZEL_TOOL_VERSION:-4.2.0}
 
 RUN cd /tmp \
     && Time="$(date +%s)" \
