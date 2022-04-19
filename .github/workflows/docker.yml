@@ -54,7 +54,20 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-
+    - 
+      id: file_changes
+      uses: trilom/file-changes-action@v1.2.3
+    - 
+      name: List all changes brought by commit
+      run: |
+        cat $HOME/files.json
+        cat $HOME/files_modified.json
+        cat $HOME/files_added.json
+        cat $HOME/files_removed.json
+        echo '${{ steps.file_changes.outputs.files}}'
+        echo '${{ steps.file_changes.outputs.files_modified}}'
+        echo '${{ steps.file_changes.outputs.files_added}}'
+        echo '${{ steps.file_changes.outputs.files_removed}}'
     - 
       name: Get changed dind Dockerfile
       id: changed-files
