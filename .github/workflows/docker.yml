@@ -39,8 +39,12 @@ name: "Build and Publish Release Containers for CFS plateform"
 on:
   push:
     branches: [ master, develop ]
+    paths:
+    - 'src/main/resources/docker/dind/**'
   pull_request:
     branches: [ master ]
+    paths: 
+    - 'src/main/resources/docker/dind/**'
 
 jobs:
 
@@ -48,34 +52,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        # Checkout as many commits as needed for the diff
+        fetch-depth: 2
     -
       name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - 
-      id: file_changes
-      uses: trilom/file-changes-action@v1.2.3
-    - 
-      name: List all changes brought by commit
-      run: |
-        cat $HOME/files.json
-        cat $HOME/files_modified.json
-        cat $HOME/files_added.json
-        cat $HOME/files_removed.json
-        echo '${{ steps.file_changes.outputs.files}}'
-        echo '${{ steps.file_changes.outputs.files_modified}}'
-        echo '${{ steps.file_changes.outputs.files_added}}'
-        echo '${{ steps.file_changes.outputs.files_removed}}'
-    - 
-      name: Get changed dind Dockerfile
-      id: changed-files
-      uses: tj-actions/changed-files@v2.1
+    # - 
+    #   id: file_changes
+    #   uses: trilom/file-changes-action@v1.2.3
+    # - 
+    #   name: List all changes brought by commit
+    #   run: |
+    #     cat $HOME/files.json
+    #     cat $HOME/files_modified.json
+    #     cat $HOME/files_added.json
+    #     cat $HOME/files_removed.json
+    #     echo '${{ steps.file_changes.outputs.files}}'
+    #     echo '${{ steps.file_changes.outputs.files_modified}}'
+    #     echo '${{ steps.file_changes.outputs.files_added}}'
+    #     echo '${{ steps.file_changes.outputs.files_removed}}'
+    # - 
+    #   name: Get changed dind Dockerfile
+    #   id: changed-files
+    #   uses: tj-actions/changed-files@v2.1
 
     - 
       name: On Dockerfile Build and push custom dind + aws-cli, ekctl, docker-compose, helm, kubectl
-      if: contains(steps.changed-files.outputs.modified_files, 'src/main/resources/docker/dind/Dockerfile')
+      # if: contains(steps.changed-files.outputs.modified_files, 'src/main/resources/docker/dind/Dockerfile')
       run: |
         make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:22.04  dind
         make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:22.04 image-info
