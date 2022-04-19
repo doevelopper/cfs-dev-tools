@@ -28,6 +28,11 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 
+ENV DOCKER_COMPOSE_VERSION ${DOCKER_COMPOSE_VERSION:-v2.4.1}
+ENV KUBE_LATEST_VERSION ${KUBE_LATEST_VERSION:-v1.15.0}
+ENV HELM_VERSION ${HELM_VERSION:-v3.8.2}
+ENV DOCTL_VERSION ${DOCTL_VERSION:-1.73.0}
+
 RUN apt-get update \
     && apt-get install curl git make wget unzip locales git-flow\
         software-properties-common apt-transport-https ca-certificates \
@@ -46,7 +51,7 @@ RUN cd /tmp \
     && pip3 install molecule \
     && pip3 install ansible
 
-RUN curl -k -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
+RUN curl -k -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/docker-compose \
     && docker-compose --version
 
@@ -54,7 +59,7 @@ RUN curl -k -L https://github.com/docker/compose/releases/download/1.29.2/docker
 # # # Install Kubectl
 # # Note: Latest version of kubectl may be found at:
 # # https://aur.archlinux.org/packages/kubectl-bin/
-ENV KUBE_LATEST_VERSION="v1.15.0"
+
 RUN \
     curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
     && chmod +x ./kubectl \
@@ -63,7 +68,7 @@ RUN \
 # # # Install helm
 # # Note: Latest version of helm may be found at:
 # # https://github.com/kubernetes/helm/releases
-ENV HELM_VERSION="v3.6.3"
+
 RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
 
@@ -78,7 +83,7 @@ RUN \
     && mv /tmp/eksctl /usr/local/bin
 
 # # Install doctl
-RUN curl --location https://github.com/digitalocean/doctl/releases/download/v1.55.0/doctl-1.55.0-linux-amd64.tar.gz | tar xz -C /tmp \
+RUN curl --location https://github.com/digitalocean/doctl/releases/download/v${DOCTL_VERSION}/doctl-${DOCTL_VERSION}-linux-amd64.tar.gz | tar xz -C /tmp \
     && mv /tmp/doctl /usr/local/bin
 
 RUN docker version || true \

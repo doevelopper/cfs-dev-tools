@@ -61,8 +61,8 @@ export BIN                 := /usr/bin
 export SHELL               = $(BIN)/env bash
 export DOCKER_SHELL        := $(BIN)/sh
 export CONFIG_SHEL         := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
-	                           else if [ -x /bin/bash ]; then echo /bin/bash; \
-	                           else echo sh; fi ; fi)
+                                else if [ -x /bin/bash ]; then echo /bin/bash; \
+                                else echo sh; fi ; fi)
 
 export PRINTF              := $(BIN)/printf
 export DF                  := $(BIN)/df
