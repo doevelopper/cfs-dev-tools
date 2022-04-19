@@ -34,6 +34,7 @@ ENV HELM_VERSION ${HELM_VERSION:-v3.8.2}
 ENV DOCTL_VERSION ${DOCTL_VERSION:-1.73.0}
 
 RUN apt-get update \
+    && TimePoint="$(date +%s)" \
     && apt-get install curl git make wget unzip locales git-flow\
         software-properties-common apt-transport-https ca-certificates \
         gnupg2 lsb-release python3-pip python3-dev python3-wheel cython3 python3-setuptools --assume-yes \
@@ -43,57 +44,86 @@ RUN apt-get update \
     && apt-get install docker-ce docker-ce-cli containerd.io --assume-yes\
     && apt-get autoremove --assume-yes \
     && apt-get clean --assume-yes \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 RUN cd /tmp \
     && Time="$(date +%s)" \
     && pip3 install --upgrade pip \
     && pip3 install molecule \
-    && pip3 install ansible
+    && pip3 install ansible \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-RUN curl -k -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && curl -k -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/docker-compose \
-    && docker-compose --version
+    && docker-compose --version \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 
 # # # Install Kubectl
 # # Note: Latest version of kubectl may be found at:
 # # https://aur.archlinux.org/packages/kubectl-bin/
 
-RUN \
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
     && chmod +x ./kubectl \
-    && mv ./kubectl /usr/local/bin/kubectl
+    && mv ./kubectl /usr/local/bin/kubectl \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 # # # Install helm
 # # Note: Latest version of helm may be found at:
 # # https://github.com/kubernetes/helm/releases
 
-RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
-    && chmod +x /usr/local/bin/helm
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
+    && chmod +x /usr/local/bin/helm \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-RUN \
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip  \
     && ./aws/install \
-    && rm -Rvf awscliv2.zip
+    && rm -Rvf awscliv2.zip \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-RUN \
-    curl --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp \
-    && mv /tmp/eksctl /usr/local/bin
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && curl --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp \
+    && mv /tmp/eksctl /usr/local/bin \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 # # Install doctl
-RUN curl --location https://github.com/digitalocean/doctl/releases/download/v${DOCTL_VERSION}/doctl-${DOCTL_VERSION}-linux-amd64.tar.gz | tar xz -C /tmp \
-    && mv /tmp/doctl /usr/local/bin
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && curl --location https://github.com/digitalocean/doctl/releases/download/v${DOCTL_VERSION}/doctl-${DOCTL_VERSION}-linux-amd64.tar.gz | tar xz -C /tmp \
+    && mv /tmp/doctl /usr/local/bin \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
-RUN docker version || true \
+RUN cd /tmp \
+    && Time="$(date +%s)" \
+    && docker version || true \
     && docker-compose version || true \
     && helm version --client || true \
     && helm help || true \
     && kubectl version || true \
     && aws --version || true \
     && eksctl version || true \
-    && doctl version
+    && doctl version \
+    && TimePoint="$(($(date +%s)-TimePoint))" \
+    && printf "Build time: %dd %02d:%02d:%02d\n" "$((TimePoint/86400))" "$((TimePoint/3600%24))" "$((TimePoint/60%60))" "$((TimePoint%60))"
 
 CMD ["/bin/bash"]
 
