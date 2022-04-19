@@ -37,6 +37,8 @@
 ## $QT_END_LICENSE$
 ##
 #############################################################################
+
+### copied from https://raw.githubusercontent.com/qbs/qbs/master/scripts/install-qt.sh
 set -eu
 
 function help() {
