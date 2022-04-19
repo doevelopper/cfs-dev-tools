@@ -70,5 +70,6 @@ jobs:
         # make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:22.04 image-info
         # make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:22.04 versioninfo
       run: |
+        docker version
         make --version
         gcc --version
