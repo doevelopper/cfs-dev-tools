@@ -66,8 +66,9 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - 
       name: On Dockerfile Build and push custom dind + aws-cli, ekctl, docker-compose, helm, kubectl
+        # make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:22.04  dind
+        # make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:22.04 image-info
+        # make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:22.04 versioninfo
       run: |
-        make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:22.04  dind
-        make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:22.04 image-info
-        make CI_VERSION=0.0.4 CI_RUNNER_TAGS=ON BASE_IMAGE=amd64/ubuntu:22.04 versioninfo
-
+        make --version
+        gcc --version
